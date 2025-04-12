@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse_combined/organized/user_home_page.dart';
-import 'package:uni_pulse_combined/organized/org_main.dart';
+import 'package:uni_pulse/Screens/user_home_page.dart';
+import 'package:uni_pulse/Screens/org_main.dart';
 
 
 class AuthScreen extends StatefulWidget {
