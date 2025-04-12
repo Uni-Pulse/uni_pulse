@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uni_pulse/Screens/add_event.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -43,7 +44,12 @@ class _MainPageState extends State<MainPage> {
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: EventSearchDelegate());
+              // showSearch(context: context, delegate: EventSearchDelegate());
+              Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => const AddEventScreen(),
+                    ),
+                  );
             },
           ),
         ],
