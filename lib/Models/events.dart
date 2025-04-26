@@ -4,7 +4,7 @@ import 'dart:io';
 
 class EventData {
   const EventData({
-    // required this.id,
+   // required this.id,
     required this.eventName,
     required this.ticketPrice,
     required this.organisation,
@@ -29,6 +29,7 @@ class Event {
 
   final String id;
   final File image;
+
   //final List<String> type;
 }
 

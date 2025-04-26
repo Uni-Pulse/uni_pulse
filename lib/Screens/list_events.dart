@@ -59,6 +59,7 @@ class _ProductListState extends State<ListEvents> {
               ),
             ),
             Expanded(
+              flex: 1,
               child: ListView.builder(
                 itemCount: products.length, // Using global products here
                 itemBuilder: (context, index) {
