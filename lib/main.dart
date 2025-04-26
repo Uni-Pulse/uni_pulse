@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Screens/start_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uni_pulse/Screens/initializing/start_screen.dart';
 
 var colorScheme = ColorScheme.fromSeed(
             seedColor: const Color.fromARGB(255, 68, 1, 254),
@@ -9,7 +10,7 @@ var colorScheme = ColorScheme.fromSeed(
 final lightTheme = ThemeData().copyWith(colorScheme: colorScheme,);
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child:MyApp()));
 }
 
 class MyApp extends StatelessWidget {

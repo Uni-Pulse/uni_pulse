@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Screens/login.dart';
-import 'package:uni_pulse/Screens/register_Screen.dart';
+import 'package:uni_pulse/Screens/initializing/login.dart';
+import 'package:uni_pulse/Screens/initializing/register_Screen.dart';
  
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});

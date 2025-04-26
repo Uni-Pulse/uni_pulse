@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Screens/add_event.dart';
+import 'package:uni_pulse/Screens/organizations/add_event.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -18,7 +18,7 @@ class _MainPageState extends State<MainPage> {
   List<Map<String, String>> filteredEvents = [];
   String searchQuery = "";
 
-  @override
+  @override 
   void initState() {
     super.initState();
     filteredEvents = List.from(events); // Initially show all events

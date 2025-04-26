@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uni_pulse/Models/events.dart';
 
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Widgets/image_controller.dart';
@@ -24,9 +25,15 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
   final _titleController = TextEditingController();
   DateTime? _selectedDate;
   final _descriptionController = TextEditingController();
+  Organisations _selectedOrganisation = Organisations.unipulse;
+  double ticketPrice = 0.0;
 
-  void _saveBin() {
-    ref.read(eventsProvider.notifier).addEvent(_eventImage!);
+  void _eventSave() {
+    // if (_eventImage == null) { // add nore logic here if things are missing
+    //   return;
+    // }
+    ref.read(eventsProvider.notifier).addEvent(//_eventImage!,
+        _titleController.text, _selectedOrganisation, _selectedDate!,ticketPrice);
 
     Navigator.of(context)
         .pop(); //Leaves creen once button is pressed, takes the screen off of the stack
@@ -77,7 +84,6 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                 ),
                 Row(
                   children: [
-          
                     IconButton(
                         onPressed: _eventdatepicker,
                         icon: const Icon(Icons.calendar_month)),
@@ -85,11 +91,26 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                     Text(_selectedDate == null
                         ? 'No date selected'
                         : formatter.format(_selectedDate!)),
+                    const SizedBox(width: 40),
+                    DropdownButton<Organisations>(
+                      value: _selectedOrganisation,
+                      items: Organisations.values.map((organisation) {
+                        return DropdownMenuItem(
+                          value: organisation,
+                          child: Text(organisation.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedOrganisation = value!;
+                        });
+                      },
+                    )
                   ],
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
-                  onPressed: _saveBin,
+                  onPressed: _eventSave,
                   label: const Text('Add Event'),
                   icon: const Icon(Icons.add),
                 )

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Screens/user_home_page.dart';
-import 'package:uni_pulse/Screens/org_main.dart';
-
+import 'package:uni_pulse/Screens/organizations/org_home.dart';
+import 'package:uni_pulse/Screens/users/user_home_page.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -50,7 +49,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (email == 'org' && password == '123') {
       Navigator.pop(context);
       Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (ctx) => MainPage()));
+          .pushReplacement(MaterialPageRoute(builder: (ctx) => OrgHomePage()));
           return;
     } else {
       showErrorDialog("Invalid credentials. Please try again.");

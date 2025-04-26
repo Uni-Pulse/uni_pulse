@@ -1,22 +1,27 @@
+import 'dart:io';
+import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
 
 class EventCard extends StatelessWidget {
   final String eventname;
   final double ticketPrice;
-  final String image;
+  //final File image;
   final Color backgroundColor;
-  final String date;
+  final DateTime date;
   const EventCard({
     super.key,
     required this.eventname,
     required this.ticketPrice,
-    required this.image,
+    //required this.image,
     required this.backgroundColor,
     required this.date,
   });
 
   @override
   Widget build(BuildContext context) {
+    final formatter = DateFormat('yMMMd');
+
     return Container(
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(16.0),
@@ -29,11 +34,12 @@ class EventCard extends StatelessWidget {
         children: [
           Text(eventname, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 5),
-          Text('\$$ticketPrice', style: Theme.of(context).textTheme.bodySmall),
+          Text(formatter.format(date), style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
-          Text(date, style: Theme.of(context).textTheme.bodySmall),
+          Text('Ticket Price: \$${ticketPrice.toStringAsFixed(2)}',
+              style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
-          Center(child: Image.asset(image)),
+          // Center(child: Image.file(image)),
         ],
       ),
     );

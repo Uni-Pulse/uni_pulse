@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Models/global_variables.dart'; // Import global_variables.dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uni_pulse/Screens/event_details.dart';
+import 'package:uni_pulse/Screens/organizations/add_event.dart';
 import 'package:uni_pulse/Widgets/event_card.dart';
-import 'package:uni_pulse/Screens/event_details_page.dart';
 import 'package:uni_pulse/Widgets/filters.dart';
+import 'package:uni_pulse/Providers/events_provider.dart'; // Import the events provider
+import 'package:uni_pulse/Models/events.dart';
+import 'package:intl/intl.dart';
 
-class ListEvents extends StatefulWidget {
-  const ListEvents({super.key});
-
-  @override
-  State<ListEvents> createState() => _ProductListState();
-}
-
-class _ProductListState extends State<ListEvents> {
-  // Declare a variable to hold the applied filters
-  Map<String, dynamic> appliedFilters = {};
+class OrgListEvents extends ConsumerWidget {
+  OrgListEvents({super.key});
+  // Use a StateProvider to hold the applied filters
+  final appliedFiltersProvider =
+      StateProvider<Map<String, dynamic>>((ref) => {});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final eventsInfo = ref.watch(eventsProvider);
+    // Use the provider to get events
+
     const border = OutlineInputBorder(
       borderSide: BorderSide(color: Color.fromRGBO(225, 225, 225, 1)),
       borderRadius: BorderRadius.horizontal(left: Radius.circular(50)),
@@ -28,27 +30,24 @@ class _ProductListState extends State<ListEvents> {
           title: const Text('Events'),
           actions: [
             IconButton(
-              icon: const Icon(Icons.filter_list),
+              icon: const Icon(Icons.add),
               onPressed: () async {
                 final filtersApplied = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const FilterPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const AddEventScreen()),
                 );
 
                 if (filtersApplied != null) {
-                  setState(() {
-                    appliedFilters = filtersApplied;
-                  });
+                  ref.read(appliedFiltersProvider.notifier).state =
+                      filtersApplied;
                 }
               },
             ),
           ],
         ),
         body: Column(
-          children: [
-            const Expanded(
-              flex: 1,
-              child: TextField(
+          children: [TextField(
                 decoration: InputDecoration(
                   hintText: 'Search',
                   prefixIcon: Icon(Icons.search),
@@ -57,32 +56,32 @@ class _ProductListState extends State<ListEvents> {
                   focusedBorder: border,
                 ),
               ),
-            ),
+            
             Expanded(
               child: ListView.builder(
-                itemCount: products.length, // Using global products here
+                itemCount: eventsInfo.length, // Using global products here
                 itemBuilder: (context, index) {
-                  final product = products[index];
-                  if (_shouldDisplayProduct(product)) {
+                  //final product = eventsInfo[index];
+                  if (_shouldDisplayProduct(eventsInfo[index], ref)) {
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              return EventDetailsPage(product: product);
+                              return EventDetailsScreen(
+                                  event: eventsInfo[index]);
                             },
                           ),
                         );
                       },
                       child: EventCard(
-                        eventname: product['eventName'] as String,
-                        ticketPrice: (product['ticketPrice'] ?? 0.0) as double,
-                        image: product['imageUrl'] as String,
-                        date: product['date'] as String,
-                        backgroundColor:
-                            index.isEven
-                                ? const Color.fromRGBO(216, 240, 253, 1)
-                                : const Color.fromRGBO(245, 247, 249, 1),
+                        eventname: eventsInfo[index].eventName,
+                        ticketPrice: eventsInfo[index].ticketPrice,
+                        //image: eventsInfo[index].image,
+                        date: eventsInfo[index].date, // Pass the DateTime directly
+                        backgroundColor: index.isEven
+                            ? const Color.fromRGBO(216, 240, 253, 1)
+                            : const Color.fromRGBO(245, 247, 249, 1),
                       ),
                     );
                   } else {
@@ -97,13 +96,15 @@ class _ProductListState extends State<ListEvents> {
     );
   }
 
-  bool _shouldDisplayProduct(Map<String, dynamic> product) {
+  bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
+    final appliedFilters = ref.watch(appliedFiltersProvider);
+
     if (appliedFilters.isEmpty) {
       return true;
     }
 
     if (appliedFilters['category'] != null &&
-        appliedFilters['category'] != product['category']) {
+        appliedFilters['category'] != product) {
       return false;
     }
 
@@ -113,7 +114,7 @@ class _ProductListState extends State<ListEvents> {
       if (priceRange is Map &&
           priceRange['min'] != null &&
           priceRange['max'] != null) {
-        double productPrice = product['ticketPrice'] as double;
+        double productPrice = product.ticketPrice;
 
         // Use default values if priceRange is incomplete
         double minPrice = priceRange['min'] ?? 0.0;
@@ -125,6 +126,6 @@ class _ProductListState extends State<ListEvents> {
       }
     }
 
-    return true;
+    return true; // Ensure a return value in all code paths
   }
 }

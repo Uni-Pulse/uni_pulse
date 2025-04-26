@@ -1,34 +1,24 @@
-import 'package:uuid/uuid.dart';
+// import 'package:uuid/uuid.dart';
 import 'dart:io';
 
 
+enum Organisations {unipulse, careersOffice, example } // figyure out a way to make this more dynamic
+
 class EventData {
   const EventData({
-    // required this.id,
+    // required this.id, 
+    //required this.image,
     required this.eventName,
-    required this.ticketPrice,
     required this.organisation,
-    required this.date,
+    required this.date, 
+     required this.ticketPrice,
   });
 
+  //final File image;
   final String eventName;
-  final double ticketPrice;
-  final String organisation;
+  final Organisations organisation;
   final DateTime date;
+  final double ticketPrice;
 }
 
-//temporary replace with above when can
-final uuid = Uuid();
-
-
-class Event {
-  Event({
-    required this.image,
-    String? id,
-  }) : id = id?? uuid.v4();
-
-  final String id;
-  final File image;
-  //final List<String> type;
-}
 

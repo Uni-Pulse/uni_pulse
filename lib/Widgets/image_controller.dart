@@ -42,8 +42,8 @@ class _ImageCameraState extends State<ImageCamera> {
     if (_eventImage != null) {
       preview = GestureDetector(
         onTap: _pickFromGallery,
-        child: Image.file(
-          _eventImage!,
+        child: Image.asset(
+          _eventImage!.path,
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
