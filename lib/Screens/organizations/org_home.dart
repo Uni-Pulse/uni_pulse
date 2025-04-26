@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Screens/list_events.dart';
+import 'package:uni_pulse/Screens/organizations/org_list_events.dart';
 //import 'package:shop_app_flutter/cart_page.dart';
 //import 'package:shop_app_flutter/product_list.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class OrgHomePage extends StatefulWidget {
+  const OrgHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<OrgHomePage> createState() => _OrgHomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _OrgHomePageState extends State<OrgHomePage> {
   int currentPage = 0;
 
-  List<Widget> pages = const [ListEvents()];
+  List<Widget> pages = [OrgListEvents()];
 
   @override
   Widget build(BuildContext context) {
