@@ -1,79 +1,140 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uni_pulse/Screens/initializing/start_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-var colorScheme = ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(255, 68, 1, 254),
-            primary: const Color.fromARGB(255, 94, 1, 254),
-          );
-
-final lightTheme = ThemeData().copyWith(colorScheme: colorScheme,);
-
-void main() {
-  runApp(const ProviderScope(child:MyApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(ChatApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-@override
+class ChatApp extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const StartScreen(),
-      theme : lightTheme,
+      home: FirebaseAuth.instance.currentUser == null
+          ? LoginScreen()
+          : ChatRoom(),
     );
   }
 }
 
+class LoginScreen extends StatelessWidget {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
+  void login(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => ChatRoom()),
+      );
+    } catch (e) {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => ChatRoom()),
+      );
+    }
+  }
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Login to Chat')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(controller: _emailController, decoration: InputDecoration(labelText: 'Email')),
+            TextField(controller: _passwordController, decoration: InputDecoration(labelText: 'Password'), obscureText: true),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => login(context),
+              child: Text('Login / Register'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Provider(
-//       create: (context) => 'hello',
-//       child: MaterialApp(
-//         title: 'UniPulse',
-//         theme: ThemeData(
-//           fontFamily: 'Moderustic',
-//           colorScheme: ColorScheme.fromSeed(
-//             seedColor: const Color.fromARGB(255, 68, 1, 254),
-//             primary: const Color.fromARGB(255, 94, 1, 254),
-//           ),
-//           appBarTheme: const AppBarTheme(
-//             titleTextStyle: TextStyle(
-//               fontSize: 20,
-//               color: Colors.black,
-//             ),
-//           ),
-//           inputDecorationTheme: const InputDecorationTheme(
-//             hintStyle: TextStyle(
-//               fontWeight: FontWeight.bold,
-//               fontSize: 16,
-//             ),
-//             prefixIconColor: Color.fromRGBO(119, 119, 119, 1),
-//           ),
-//           textTheme: const TextTheme(
-//             titleLarge: TextStyle(
-//               fontWeight: FontWeight.bold,
-//               fontSize: 35,
-//             ),
-//             titleMedium: TextStyle(
-//               fontWeight: FontWeight.bold,
-//               fontSize: 20,
-//             ),
-//             bodySmall: TextStyle(
-//               fontWeight: FontWeight.bold,
-//               fontSize: 16,
-//             ),
-//           ),
-//           useMaterial3: true,
-//         ),
+class ChatRoom extends StatelessWidget {
+  final TextEditingController _messageController = TextEditingController();
+  final CollectionReference messages = FirebaseFirestore.instance.collection('messages');
 
-//         home: const HomePage(),
-//       ),
-//     );
-//   }
-// }
+  void sendMessage() {
+    if (_messageController.text.trim().isEmpty) return;
+    messages.add({
+      'text': _messageController.text.trim(),
+      'sender': FirebaseAuth.instance.currentUser!.email,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+    _messageController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat Room'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: messages.orderBy('timestamp', descending: true).snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                return ListView(
+                  reverse: true,
+                  children: snapshot.data!.docs.map((doc) {
+                    return ListTile(
+                      title: Text(doc['text']),
+                      subtitle: Text(doc['sender']),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(labelText: 'Type a message'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: sendMessage,
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
