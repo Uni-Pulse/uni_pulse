@@ -86,6 +86,12 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     try {
       // Create a new account object
       final newAccount = AccountData(
+<<<<<<< Updated upstream
+=======
+        firstName: firstName,
+        lastName: lastName,
+        phoneNum: int.parse(phoneNumber), // Assuming phone number
+>>>>>>> Stashed changes
         email: email,
         password: password,
         isOrganisation: isOrganisation,
