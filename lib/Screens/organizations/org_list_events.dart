@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Screens/event_details.dart';
 import 'package:uni_pulse/Screens/organizations/add_event.dart';
 import 'package:uni_pulse/Widgets/event_card.dart';
-import 'package:uni_pulse/Widgets/filters.dart';
 import 'package:uni_pulse/Providers/events_provider.dart'; // Import the events provider
 import 'package:uni_pulse/Models/events.dart';
-import 'package:intl/intl.dart';
 
 class OrgListEvents extends ConsumerWidget {
   OrgListEvents({super.key});

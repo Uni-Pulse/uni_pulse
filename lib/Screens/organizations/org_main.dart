@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:uni_pulse/Screens/organizations/add_event.dart';
 
 class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
   @override
   _MainPageState createState() => _MainPageState();
 }
