@@ -42,21 +42,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
 
-    final account = ref.read(accountsProvider.notifier).authenticate(email, password);
-    if (account != null) {
-    Navigator.pop(context);
-    if (account.isOrganisation) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (ctx) => OrgHomePage()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (ctx) => HomePage()),
-      );
-    }
-  } else {
-    showErrorDialog("Invalid credentials. Please try again.");
-  
+final account = await ref.read(accountsProvider.notifier).authenticate(email, password);
+Navigator.pop(context);
+if (account != null && account.isOrganisation) {
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (ctx) => OrgHomePage()),
+  );
+} else if (account != null) {
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (ctx) => HomePage()),
+  );
+} else {
+  showErrorDialog("Authentication failed. Please try again.");
 }
   }
 

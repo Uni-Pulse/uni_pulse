@@ -86,8 +86,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     ref.read(accountsProvider.notifier).registerUser(
+      _firstNameController.text.trim(),
+      _lastNameController.text.trim(),
+      _phoneNumberController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text.trim(),
+      _selectedDate!,
       isOrganisation,
     );
 

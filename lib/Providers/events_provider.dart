@@ -6,7 +6,7 @@ import 'package:uni_pulse/Models/acconts.dart';
 import 'package:uni_pulse/Models/events.dart';  
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
+import 'package:collection/collection.dart'; // Import for firstWhereOrNull
 import 'package:firebase_auth/firebase_auth.dart';
 
 
@@ -77,36 +77,49 @@ final eventsProvider =
 
 
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-  AccountNotifier() : super([AccountData(email: 'user', password: '123', isOrganisation: false),
-    AccountData(email: 'org', password: '123', isOrganisation: true),]);
+  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', password: '123', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
+    AccountData(firstName: 'org',lastName: '', email: 'org', password: '123', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  AccountData? authenticate(String email, String password) {
-    try{
-    return state.firstWhereOrNull(
-      (account) => account.email == email && account.password == password,
+  Future<AccountData?> authenticate(String email, String password) async {
+  try {
+    // Use FirebaseAuth to sign in with email and password
+    final userCredential = await auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
     );
-  } catch (e) {
+
+    // If successful, find the user in the local state
+    return state.firstWhereOrNull(
+      (account) => account.email == email,
+    );
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      debugPrint('No user found for that email.');
+    } else if (e.code == 'wrong-password') {
+      debugPrint('Wrong password provided for that user.');
+    } else {
+      debugPrint('Error during authentication: ${e.message}');
+    }
     return null;
-  }}
+  } catch (e) {
+    debugPrint('Unexpected error during authentication: $e');
+    return null;
+  }
+}
 
   // Add a new user account to Firestore
   Future<void> registerUser(String firstName, String lastName, String phoneNumber,String email, String password, DateTime dob, bool isOrganisation) async {
     try {
-      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      // UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+      //   email: email,
+      //   password: password,
+      // );
       // Create a new account object
       final newAccount = AccountData(
 
-
-
-        firstName: firstName,
-        lastName: lastName,
-        phoneNum: int.parse(phoneNumber), // Assuming phone number
 
         firstName: firstName,
         lastName: lastName,
@@ -131,16 +144,16 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
       // Update the local state
       state = [newAccount, ...state];
-    } on FirebaseAuthException catch (e){
-      if (e.code == 'email-already-in-use'){
-        debugPrint('Email already in use. Please use a different email.');
-      } else if (e.code == 'weak-password') {
-        debugPrint('The password provided is too weak.');
-      } else if (e.code == 'invalid-email') {
-        debugPrint('The email address is not valid.');
-      } else {
-        debugPrint('Error registering user: ${e.message}');
-      }
+    // } on FirebaseAuthException catch (e){
+    //   if (e.code == 'email-already-in-use'){
+    //     debugPrint('Email already in use. Please use a different email.');
+    //   } else if (e.code == 'weak-password') {
+    //     debugPrint('The password provided is too weak.');
+    //   } else if (e.code == 'invalid-email') {
+    //     debugPrint('The email address is not valid.');
+    //   } else {
+    //     debugPrint('Error issue with email: ${e.message}');
+    //   }
     }catch (e) {
       debugPrint('Error registering user: $e');
     }
