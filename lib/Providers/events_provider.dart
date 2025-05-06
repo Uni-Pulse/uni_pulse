@@ -1,6 +1,4 @@
 
-
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:path_provider/path_provider.dart' as syspaths;
 // import 'package:path/path.dart' as path;
@@ -8,7 +6,9 @@ import 'package:uni_pulse/Models/acconts.dart';
 import 'package:uni_pulse/Models/events.dart';  
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 
 class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
@@ -77,10 +77,20 @@ final eventsProvider =
 
 
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-  AccountNotifier() : super(const []);
+  AccountNotifier() : super([AccountData(email: 'user', password: '123', isOrganisation: false),
+    AccountData(email: 'org', password: '123', isOrganisation: true),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
+
+  AccountData? authenticate(String email, String password) {
+    try{
+    return state.firstWhereOrNull(
+      (account) => account.email == email && account.password == password,
+    );
+  } catch (e) {
+    return null;
+  }}
 
   // Add a new user account to Firestore
   Future<void> registerUser(String firstName, String lastName, String phoneNumber,String email, String password, DateTime dob, bool isOrganisation) async {
@@ -142,7 +152,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final querySnapshot = await firestore.collection('users').get();
       final users = querySnapshot.docs.map((doc) {
         final data = doc.data();
-        debugPrint('Fetched user data: $data'); // Debug print to check fetched data
+        debugPrint('Fetched user: $data');
         return AccountData(
           email: data['email'] as String,
           password: data['password'] as String,
