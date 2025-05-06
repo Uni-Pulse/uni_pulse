@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 
 
-
 var colorScheme = ColorScheme.fromSeed(
             seedColor: const Color.fromARGB(255, 68, 1, 254),
             primary: const Color.fromARGB(255, 94, 1, 254),

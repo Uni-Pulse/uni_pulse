@@ -7,6 +7,8 @@ import 'package:uni_pulse/Models/events.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
@@ -79,6 +81,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     AccountData(email: 'org', password: '123', isOrganisation: true),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   AccountData? authenticate(String email, String password) {
     try{
@@ -90,25 +93,55 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   }}
 
   // Add a new user account to Firestore
-  Future<void> registerUser(String email, String password, bool isOrganisation) async {
+  Future<void> registerUser(String firstName, String lastName, String phoneNumber,String email, String password, DateTime dob, bool isOrganisation) async {
     try {
-      // Create a new account object
-      final newAccount = AccountData(
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
+      );
+      // Create a new account object
+      final newAccount = AccountData(
+
+
+
+        firstName: firstName,
+        lastName: lastName,
+        phoneNum: int.parse(phoneNumber), // Assuming phone number
+
+        firstName: firstName,
+        lastName: lastName,
+        phoneNum: int.parse(phoneNumber), // Assuming phone number is stored as an int
+        email: email,
+        password: password,
+        dob: dob,
         isOrganisation: isOrganisation,
       );
 
       // Save the account to Firestore
       await firestore.collection('users').add({
+        'firstName': firstName,
+        'lastName': lastName,
+        'phoneNum': int.parse(phoneNumber),
         'email': email,
         'password': password, // Note: Storing plain text passwords is insecure. Use hashing instead.
+        'dob': dob.toIso8601String(),
         'isOrganisation': isOrganisation,
+         // Store date as a string in ISO format
       });
 
       // Update the local state
       state = [newAccount, ...state];
-    } catch (e) {
+    } on FirebaseAuthException catch (e){
+      if (e.code == 'email-already-in-use'){
+        debugPrint('Email already in use. Please use a different email.');
+      } else if (e.code == 'weak-password') {
+        debugPrint('The password provided is too weak.');
+      } else if (e.code == 'invalid-email') {
+        debugPrint('The email address is not valid.');
+      } else {
+        debugPrint('Error registering user: ${e.message}');
+      }
+    }catch (e) {
       debugPrint('Error registering user: $e');
     }
   }
@@ -124,6 +157,10 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           email: data['email'] as String,
           password: data['password'] as String,
           isOrganisation: data['isOrganisation'] as bool,
+          firstName: data['firstName'] as String,
+          lastName: data['lastName'] as String,
+          phoneNum: data['phoneNum'] as int,
+          dob: DateTime.parse(data['dob'] as String), // Assuming dob is stored as a string in ISO format
         );
       }).toList();
 
