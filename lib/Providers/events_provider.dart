@@ -97,10 +97,6 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         firstName: firstName,
         lastName: lastName,
         phoneNum: int.parse(phoneNumber), // Assuming phone number
-
-        firstName: firstName,
-        lastName: lastName,
-        phoneNum: int.parse(phoneNumber), // Assuming phone number is stored as an int
         email: email,
         password: password,
         dob: dob,
