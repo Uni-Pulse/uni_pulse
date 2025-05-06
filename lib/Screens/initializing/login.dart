@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Screens/organizations/org_home.dart';
 import 'package:uni_pulse/Screens/users/user_home_page.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AuthScreen extends StatefulWidget {
+class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
   @override
-  State<AuthScreen> createState() {return _AuthScreenState();}
+  ConsumerState<AuthScreen> createState() {return _AuthScreenState();}
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends ConsumerState<AuthScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
@@ -31,7 +33,7 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  void handleAuth() {
+  void handleAuth(WidgetRef ref) async{
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
@@ -40,20 +42,22 @@ class _AuthScreenState extends State<AuthScreen> {
       return;
     }
 
-    if (email == 'user' && password == '123') {
-      Navigator.pop(context);
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (ctx) => HomePage()));
-          return;
-    }
-    if (email == 'org' && password == '123') {
-      Navigator.pop(context);
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (ctx) => OrgHomePage()));
-          return;
+    final account = ref.read(accountsProvider.notifier).authenticate(email, password);
+    if (account != null) {
+    Navigator.pop(context);
+    if (account.isOrganisation) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => OrgHomePage()),
+      );
     } else {
-      showErrorDialog("Invalid credentials. Please try again.");
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => HomePage()),
+      );
     }
+  } else {
+    showErrorDialog("Invalid credentials. Please try again.");
+  
+}
   }
 
   @override
@@ -89,7 +93,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: handleAuth,
+                    onPressed: () => handleAuth(ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal.shade400,
                       foregroundColor: Colors.white,

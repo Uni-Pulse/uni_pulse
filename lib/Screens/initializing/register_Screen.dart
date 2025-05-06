@@ -1,63 +1,21 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
 // import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:uni_pulse/Screens/initializing/login.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   try {
-//     await Firebase.initializeApp();
-//   } catch (e) {
-//     print("Firebase Init Error: $e");
-//   }
-//   runApp(const MyApp());
-//  }
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       home: HomeScreen(),
-//     );
-//   }
-// }
-
-// class HomeScreen extends StatelessWidget {
-//   const HomeScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Welcome")),
-//       body: Center(
-//         child: ElevatedButton(
-//           onPressed: () {
-//             print("Navigating to Register Screen..."); // Debugging line
-//             Navigator.push(
-//               context,
-//               MaterialPageRoute(builder: (context) => const RegisterScreen()),
-//             );
-//           },
-//           child: const Text("Go to Register"),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() {
+  ConsumerState<RegisterScreen> createState() {
     return _RegisterScreenState();
   }
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   // final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -67,6 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  bool isOrganisation = false;
 
   DateTime? _selectedDate;
 
@@ -104,6 +63,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //     }
   //   }
   // }
+
+  void _saveAccount() {
+    if (_firstNameController.text.isEmpty ||
+        _lastNameController.text.isEmpty ||
+        _phoneNumberController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty ||
+        _dobController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    ref.read(accountsProvider.notifier).registerUser(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+      isOrganisation,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Registration Successful!")),
+    );
+
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => const AuthScreen())); //_registerUser,
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,9 +196,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 20),
+              Switch(
+                value: isOrganisation,
+                onChanged: (bool value) {
+                  setState(() {
+                    isOrganisation = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
               ElevatedButton(
-                onPressed:() {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const AuthScreen() ));}, //_registerUser,
+                onPressed: _saveAccount,
                 child: const Text("Register"),
               ),
             ],
@@ -215,4 +217,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 }
 
-// test commit 
+// test commit
