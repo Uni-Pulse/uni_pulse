@@ -16,12 +16,17 @@ class EventNotifier extends StateNotifier<List<EventData>> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   
     // Add an event to Firestore and update the state
-  Future<void> addEvent(String eventName, Organisations organisation, DateTime date, double ticketPrice) async {
+  Future<void> addEvent(
+    String eventName, 
+    Organisations organisation, 
+    DateTime date, 
+    double ticketPrice) async {
     // final appDir = await syspaths.getApplicationDocumentsDirectory();
     // final filename = path.basename(image.path);
     // final copiedImage = await image.copy('${appDir.path}/$filename');
 
     try {
+
       // Create a new event object
       final newEvent = EventData(
         eventName: eventName,
@@ -85,42 +90,65 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
   Future<AccountData?> authenticate(String email, String password) async {
   try {
-    // Use FirebaseAuth to sign in with email and password
+    // Authenticate the user with Firebase Authentication
     final userCredential = await auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
 
-    // If successful, find the user in the local state
-    return state.firstWhereOrNull(
-      (account) => account.email == email,
-    );
+    // Fetch the user's details from Firestore
+    final userDoc = await firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (userDoc.docs.isNotEmpty) {
+      final data = userDoc.docs.first.data();
+      return AccountData(
+        email: data['email'] as String,
+        password: data['password'] as String,
+        isOrganisation: data['isOrganisation'] as bool,
+        firstName: data['firstName'] as String,
+        lastName: data['lastName'] as String,
+        phoneNum: data['phoneNum'] as int,
+        dob: DateTime.parse(data['dob'] as String),
+      );
+    } else {
+      debugPrint('No user details found in Firestore.');
+      return null;
+    }
   } on FirebaseAuthException catch (e) {
     if (e.code == 'user-not-found') {
       debugPrint('No user found for that email.');
     } else if (e.code == 'wrong-password') {
-      debugPrint('Wrong password provided for that user.');
+      debugPrint('Wrong password provided.');
     } else {
-      debugPrint('Error during authentication: ${e.message}');
+      debugPrint('FirebaseAuthException: ${e.message}');
     }
     return null;
   } catch (e) {
-    debugPrint('Unexpected error during authentication: $e');
+    debugPrint('Error during authentication: $e');
     return null;
   }
 }
 
   // Add a new user account to Firestore
-  Future<void> registerUser(String firstName, String lastName, String phoneNumber,String email, String password, DateTime dob, bool isOrganisation) async {
+  Future<String?> registerUser(
+    String firstName, 
+    String lastName, 
+    String phoneNumber,
+    String email, 
+    String password, 
+    DateTime dob, 
+    bool isOrganisation) async {
     try {
-      // UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-      //   email: email,
-      //   password: password,
-      // );
-      // Create a new account object
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      // if authentication succeeds, create a new user account
       final newAccount = AccountData(
-
-
         firstName: firstName,
         lastName: lastName,
         phoneNum: int.parse(phoneNumber), // Assuming phone number is stored as an int
@@ -144,18 +172,23 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
       // Update the local state
       state = [newAccount, ...state];
-    // } on FirebaseAuthException catch (e){
-    //   if (e.code == 'email-already-in-use'){
-    //     debugPrint('Email already in use. Please use a different email.');
-    //   } else if (e.code == 'weak-password') {
-    //     debugPrint('The password provided is too weak.');
-    //   } else if (e.code == 'invalid-email') {
-    //     debugPrint('The email address is not valid.');
-    //   } else {
-    //     debugPrint('Error issue with email: ${e.message}');
-    //   }
+      return null; // Return null if registration is successful
+    } on FirebaseAuthException catch (e){
+      debugPrint('FirebaseAuthException during registeration: ${e.code}');
+      String errorMessage;
+      if (e.code == 'email-already-in-use'){
+        errorMessage = 'Email already in use.';
+      } else if (e.code == 'weak-password') {
+        errorMessage = 'Password is too weak.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else {
+        errorMessage = 'Authentication error: ${e.message}';
+      }
+      return errorMessage; // Return the error message if registration fails
     }catch (e) {
-      debugPrint('Error registering user: $e');
+      debugPrint('Genereal error during registration: $e');
+      return 'An unexpected error occurred: $e'; // Return a generic error message
     }
   }
 

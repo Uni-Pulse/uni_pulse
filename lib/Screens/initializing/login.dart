@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:uni_pulse/Screens/organizations/org_home.dart';
 import 'package:uni_pulse/Screens/users/user_home_page.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
@@ -33,29 +34,37 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  void handleAuth(WidgetRef ref) async{
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
+void handleAuth(WidgetRef ref) async {
+  String email = emailController.text.trim();
+  String password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      showErrorDialog("All fields are required.");
-      return;
-    }
-
-final account = await ref.read(accountsProvider.notifier).authenticate(email, password);
-Navigator.pop(context);
-if (account != null && account.isOrganisation) {
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (ctx) => OrgHomePage()),
-  );
-} else if (account != null) {
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (ctx) => HomePage()),
-  );
-} else {
-  showErrorDialog("Authentication failed. Please try again.");
-}
+  if (email.isEmpty || password.isEmpty) {
+    showErrorDialog("All fields are required.");
+    return;
   }
+
+  try {
+    final account = await ref.read(accountsProvider.notifier).authenticate(email, password);
+
+    if (account != null) {
+      Navigator.pop(context);
+      if (account.isOrganisation) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => OrgHomePage()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => HomePage()),
+        );
+      }
+    } else {
+      showErrorDialog("Invalid credentials. Please try again.");
+    }
+  } catch (e) {
+    showErrorDialog("An error occurred during login. Please try again.");
+    debugPrint('Error during login: $e');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
