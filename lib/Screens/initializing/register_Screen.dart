@@ -64,7 +64,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   //   }
   // }
 
-  void _saveAccount() {
+  void _saveAccount() async {
     if (_firstNameController.text.isEmpty ||
         _lastNameController.text.isEmpty ||
         _phoneNumberController.text.isEmpty ||
@@ -85,7 +85,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    ref.read(accountsProvider.notifier).registerUser(
+    final String? errorMessage = await ref.read(accountsProvider.notifier).registerUser(
       _firstNameController.text.trim(),
       _lastNameController.text.trim(),
       _phoneNumberController.text.trim(),
@@ -94,14 +94,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _selectedDate!,
       isOrganisation,
     );
-
-    ScaffoldMessenger.of(context).showSnackBar(
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Registration failed: $errorMessage")),
+      );
+      return;
+    }
+    else{
+      ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Registration Successful!")),
     );
-
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => const AuthScreen())); //_registerUser,
   }
+    }
+
+    
+
+    
 
   @override
   Widget build(BuildContext context) {
