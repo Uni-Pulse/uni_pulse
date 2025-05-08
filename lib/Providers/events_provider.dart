@@ -82,8 +82,8 @@ final eventsProvider =
 
 
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', password: '123', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
-    AccountData(firstName: 'org',lastName: '', email: 'org', password: '123', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
+  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
+    AccountData(firstName: 'org',lastName: '', email: 'org', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -96,18 +96,22 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       password: password,
     );
 
-    // Fetch the user's details from Firestore
-    final userDoc = await firestore
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .limit(1)
-        .get();
+    final String? uid = userCredential.user?.uid;
 
-    if (userDoc.docs.isNotEmpty) {
-      final data = userDoc.docs.first.data();
+    // Check if the UID actually was gotten
+    if (uid == null) {
+      debugPrint('Error: User ID is null after successful login.');
+      return null;
+    }
+
+    // Fetch the user's details from Firestore
+    final userDoc = await firestore.collection('users').doc(uid).get();
+
+    if (userDoc.exists && userDoc.data() != null) {
+      final data = userDoc.data()!;
       return AccountData(
         email: data['email'] as String,
-        password: data['password'] as String,
+        // password: data['password'] as String,
         isOrganisation: data['isOrganisation'] as bool,
         firstName: data['firstName'] as String,
         lastName: data['lastName'] as String,
@@ -115,7 +119,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         dob: DateTime.parse(data['dob'] as String),
       );
     } else {
-      debugPrint('No user details found in Firestore.');
+      debugPrint('No user details documents found in Firsetore for UID: $uid');
       return null;
     }
   } on FirebaseAuthException catch (e) {
@@ -123,7 +127,10 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       debugPrint('No user found for that email.');
     } else if (e.code == 'wrong-password') {
       debugPrint('Wrong password provided.');
-    } else {
+    }else if (e.code == 'user-diabled'){
+      debugPrint('User account is disabled.');
+    } 
+    else {
       debugPrint('FirebaseAuthException: ${e.message}');
     }
     return null;
@@ -147,26 +154,32 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         email: email,
         password: password,
       );
+      final String? uid = userCredential.user?.uid;
+
+      if (uid == null) {
+        debugPrint('Error: User ID is null after registration.');
+        return 'An unexpected error occured: UID not fouund';
+      }
       // if authentication succeeds, create a new user account
       final newAccount = AccountData(
         firstName: firstName,
         lastName: lastName,
         phoneNum: int.parse(phoneNumber), // Assuming phone number is stored as an int
         email: email,
-        password: password,
+        // password: password,
         dob: dob,
         isOrganisation: isOrganisation,
       );
 
       // Save the account to Firestore
-      await firestore.collection('users').add({
+      await firestore.collection('users').doc(uid).set({
         'firstName': firstName,
         'lastName': lastName,
         'phoneNum': int.parse(phoneNumber),
         'email': email,
-        'password': password, // Note: Storing plain text passwords is insecure. Use hashing instead.
         'dob': dob.toIso8601String(),
         'isOrganisation': isOrganisation,
+        'uid': uid,
          // Store date as a string in ISO format
       });
 
@@ -201,7 +214,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         debugPrint('Fetched user: $data');
         return AccountData(
           email: data['email'] as String,
-          password: data['password'] as String,
+          // password: data['password'] as String,
           isOrganisation: data['isOrganisation'] as bool,
           firstName: data['firstName'] as String,
           lastName: data['lastName'] as String,
