@@ -6,7 +6,7 @@ import 'package:uni_pulse/Models/acconts.dart';
 import 'package:uni_pulse/Models/events.dart';  
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart'; // Import for firstWhereOrNull
+ // Import for firstWhereOrNull
 import 'package:firebase_auth/firebase_auth.dart';
 
 
