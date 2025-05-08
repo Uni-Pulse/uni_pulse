@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+// import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:uni_pulse/Screens/organizations/org_home.dart';
 import 'package:uni_pulse/Screens/users/user_home_page.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
