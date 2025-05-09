@@ -15,6 +15,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _course = '';
   String _studentID = '';
 
+  final List<Map<String, String>> starredEvents = [
+    {
+      'title': 'Tech Networking Event',
+      'date': 'March 25, 2025',
+      'location': 'Building A'
+    },
+    {
+      'title': 'AI & ML Seminar',
+      'date': 'May 5, 2025',
+      'location': 'Library Hall'
+    },
+    {
+      'title': 'Career Fair',
+      'date': 'July 20, 2025',
+      'location': 'Main Auditorium'
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,7 +121,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Save Profile',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
-              )
+              ),
+
+              SizedBox(height: 30),
+              Text(
+                '⭐ Starred Events',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+
+              // Scrollable List of Starred Events
+              ...starredEvents.map((event) => Card(
+                    elevation: 3,
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: Icon(Icons.event, color: Color(0xFF0091DA)),
+                      title: Text(event['title']!, style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text('${event['date']} • ${event['location']}'),
+                    ),
+                  )),
             ],
           ),
         ),
