@@ -6,7 +6,7 @@ class EventDetailsScreen extends StatelessWidget {
   const EventDetailsScreen({super.key, required this.event});
 
   final EventData event;
-
+  // add a constructipor to show deleye button for only the event owner
   @override
   Widget build(BuildContext context) {
     

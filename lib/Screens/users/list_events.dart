@@ -85,7 +85,7 @@ class ListEvents extends ConsumerWidget {
                       },
                       child: EventCard(
                         eventname: eventsInfo[index].eventName,
-                        ticketPrice: eventsInfo[index].ticketPrice,
+                        ticketPrice: double.parse(eventsInfo[index].ticketPrice),
                         //image: eventsInfo[index].image,
                         date: eventsInfo[index].date,
                         backgroundColor:
@@ -129,7 +129,7 @@ class ListEvents extends ConsumerWidget {
     if (priceRange is Map &&
         priceRange['min'] != null &&
         priceRange['max'] != null) {
-      double productPrice = product.ticketPrice;
+      double productPrice = double.parse(product.ticketPrice);
 
       double minPrice = priceRange['min'] ?? 0.0;
       double maxPrice = priceRange['max'] ?? 50.0;
