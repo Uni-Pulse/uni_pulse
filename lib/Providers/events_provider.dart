@@ -14,13 +14,36 @@ class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  
+
+     Future<void> deleteEvent(EventData event) async {
+    try {
+      // Delete the event from Firestore
+      final eventDoc = await firestore
+          .collection('events')
+          .where('eventName', isEqualTo: event.eventName)
+          .where('date', isEqualTo: event.date)
+          .limit(1)
+          .get();
+
+      if (eventDoc.docs.isNotEmpty) {
+        await firestore.collection('events').doc(eventDoc.docs.first.id).delete();
+      }
+
+      // Update the local state
+      state = state.where((e) => e != event).toList();
+    } catch (e) {
+      debugPrint('Error deleting event: $e');
+    }
+  }
     // Add an event to Firestore and update the state
   Future<void> addEvent(
     String eventName, 
-    Organisations organisation, 
+    String organisation, 
     DateTime date, 
-    double ticketPrice) async {
+    String ticketPrice,
+    EventType eventType,
+    String description) async {
+    
     // final appDir = await syspaths.getApplicationDocumentsDirectory();
     // final filename = path.basename(image.path);
     // final copiedImage = await image.copy('${appDir.path}/$filename');
@@ -33,14 +56,18 @@ class EventNotifier extends StateNotifier<List<EventData>> {
         organisation: organisation,
         date: date,
         ticketPrice: ticketPrice,
+        eventType: eventType,
+        description: description
       );
 
       // Save the event to Firestore
       await firestore.collection('events').add({
         'eventName': eventName,
-        'organisation': organisation.name, // Assuming Organisations has a 'name' property
+        'organisation': organisation,
         'date': date.toIso8601String(),
         'ticketPrice': ticketPrice,
+        'eventType': eventType.name,
+        'desription' : description// Assuming EventType has a 'name' property
       });
 
     state = [newEvent, ...state];
@@ -57,9 +84,11 @@ class EventNotifier extends StateNotifier<List<EventData>> {
         final data = doc.data();
         return EventData(
           eventName: data['eventName'] as String,
-          organisation: Organisations.values.firstWhere((e) => e.name == data['organisation'] as String), // Adjust based on your Organisations enum
+          organisation: data['organisation'] as String, 
           date: DateTime.parse(data['date'] as String),
-          ticketPrice: data['ticketPrice'] as double,
+          ticketPrice: data['ticketPrice'] ,
+          eventType: EventType.values.firstWhere((e) => e.name == data['eventType'] as String), // Adjust based on your EventType enum
+          description: data['desription'] as String, // Assuming description is stored in Firestore
         );
       }).toList();
 
@@ -88,6 +117,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
+  AccountData? currentUser; // To store the currently logged-in user
   Future<AccountData?> authenticate(String email, String password) async {
   try {
     // Authenticate the user with Firebase Authentication
@@ -109,7 +139,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
     if (userDoc.exists && userDoc.data() != null) {
       final data = userDoc.data()!;
-      return AccountData(
+      final loggedInUser = AccountData(
         email: data['email'] as String,
         // password: data['password'] as String,
         isOrganisation: data['isOrganisation'] as bool,
@@ -118,6 +148,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         phoneNum: data['phoneNum'] as int,
         dob: DateTime.parse(data['dob'] as String),
       );
+
+      currentUser = loggedInUser;
+      return loggedInUser; // Return the logged-in user's details
     } else {
       debugPrint('No user details documents found in Firsetore for UID: $uid');
       return null;

@@ -14,47 +14,53 @@ import 'package:uni_pulse/Models/events.dart';
 
 
 class OrgListEvents extends ConsumerWidget {
-  OrgListEvents({super.key});
+  const OrgListEvents({super.key});
   // Use a StateProvider to hold the applied filters
 
+@override
+Widget build(BuildContext context, WidgetRef ref) {
+  // Get the logged-in user's email
+  final currentUser = ref.watch(accountsProvider.notifier).currentUser;
+  final eventsInfo = ref.watch(eventsProvider);
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final eventsInfo = ref.watch(eventsProvider);
-    // Use the provider to get events
+  // Filter events to show only those created by the logged-in organization
+  final filteredEvents = eventsInfo.where((event) {
+    return currentUser != null && event.organisation == currentUser.firstName;
+  }).toList();
 
-    const border = OutlineInputBorder(
-      borderSide: BorderSide(color: Color.fromRGBO(225, 225, 225, 1)),
-      borderRadius: BorderRadius.horizontal(left: Radius.circular(50)),
-    );
+  const border = OutlineInputBorder(
+    borderSide: BorderSide(color: Color.fromRGBO(225, 225, 225, 1)),
+    borderRadius: BorderRadius.horizontal(left: Radius.circular(50)),
+  );
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Events'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () async {
-                final filtersApplied = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AddEventScreen()),
-                );
+  return SafeArea(
+    child: Scaffold(
+      appBar: AppBar(
+        title: const Text('My Events'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final filtersApplied = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddEventScreen(),
+                ),
+              );
 
-                if (filtersApplied != null) {
-                  ref.read(appliedFiltersProvider.notifier).state =
-                      filtersApplied;
-                }
-              },
-            ),
-          ],
-        ),
-        body: Column(
-          children: [TextField(
+              if (filtersApplied != null) {
+                ref.read(appliedFiltersProvider.notifier).state = filtersApplied;
+              }
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          TextField(
             decoration: InputDecoration(
               hintText: 'Search',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search),
               border: border,
               enabledBorder: border,
               focusedBorder: border,
@@ -62,46 +68,73 @@ class OrgListEvents extends ConsumerWidget {
             onChanged: (value) {
               ref.read(searchQueryProvider.notifier).state = value;
             },
-        ),              
-            
-            Expanded(
-              child: ListView.builder(
-                itemCount: eventsInfo.length, // Using global products here
-                itemBuilder: (context, index) {
-                  //final product = eventsInfo[index];
-                  if (_shouldDisplayProduct(eventsInfo[index], ref)) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return EventDetailsScreen(
-                                  event: eventsInfo[index]);
-                            },
-                          ),
-                        );
-                      },
-                      child: EventCard(
-                        eventname: eventsInfo[index].eventName,
-                        ticketPrice: eventsInfo[index].ticketPrice,
-                        //image: eventsInfo[index].image,
-                        date: eventsInfo[index].date, // Pass the DateTime directly
-                        backgroundColor: index.isEven
-                            ? const Color.fromRGBO(216, 240, 253, 1)
-                            : const Color.fromRGBO(245, 247, 249, 1),
-                      ),
-                    );
-                  } else {
-                    return const SizedBox.shrink();
+          ),
+          Expanded(
+  child: ListView.builder(
+    itemCount: filteredEvents.length, // Use filtered events here
+    itemBuilder: (context, index) {
+      if (_shouldDisplayProduct(filteredEvents[index], ref)) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return EventDetailsScreen(
+                    event: filteredEvents[index],
+                  );
+                },
+              ),
+            );
+          },
+          child: Card(
+            child: ListTile(
+              title: Text(filteredEvents[index].eventName),
+              subtitle: Text(
+                'Date: ${filteredEvents[index].date.toLocal().toString().split(' ')[0]}',
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Delete Event'),
+                      content: const Text(
+                          'Are you sure you want to delete this event?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    await ref
+                        .read(eventsProvider.notifier)
+                        .deleteEvent(filteredEvents[index]); // Implement deleteEvent
                   }
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        );
+      } else {
+        return const SizedBox.shrink();
+      }
+    },
+  ),
+),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
 bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
   final appliedFilters = ref.watch(appliedFiltersProvider);
@@ -126,7 +159,7 @@ bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
     if (priceRange is Map &&
         priceRange['min'] != null &&
         priceRange['max'] != null) {
-      double productPrice = product.ticketPrice;
+      double productPrice = double.tryParse(product.ticketPrice) ?? 0.0;
 
       double minPrice = priceRange['min'] ?? 0.0;
       double maxPrice = priceRange['max'] ?? 50.0;
