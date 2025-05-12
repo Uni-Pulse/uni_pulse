@@ -3,77 +3,86 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(ChatApp());
-}
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await Firebase.initializeApp();
+//   runApp(ChatApp());
+// }
 
-class ChatApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: FirebaseAuth.instance.currentUser == null
-          ? LoginScreen()
-          : ChatRoom(),
-    );
-  }
+// class ChatApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       home: FirebaseAuth.instance.currentUser == null
+//           ? LoginScreen()
+//           : ChatRoom(),
+//     );
+//   }
   
-}
+// }
 
-class LoginScreen extends StatelessWidget {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+// class LoginScreen extends StatelessWidget {
+//   final TextEditingController _emailController = TextEditingController();
+//   final TextEditingController _passwordController = TextEditingController();
 
-  void login(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => ChatRoom()),
-      );
-    } catch (e) {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => ChatRoom()),
-      );
-    }
-  }
+//   void login(BuildContext context) async {
+//     try {
+//       await FirebaseAuth.instance.signInWithEmailAndPassword(
+//         email: _emailController.text,
+//         password: _passwordController.text,
+//       );
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (_) => ChatRoom()),
+//       );
+//     } catch (e) {
+//       await FirebaseAuth.instance.createUserWithEmailAndPassword(
+//         email: _emailController.text,
+//         password: _passwordController.text,
+//       );
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (_) => ChatRoom()),
+//       );
+//     }
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Login to Chat')),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(controller: _emailController, decoration: InputDecoration(labelText: 'Email')),
-            TextField(controller: _passwordController, decoration: InputDecoration(labelText: 'Password'), obscureText: true),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => login(context),
-              child: Text('Login / Register'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text('Login to Chat')),
+//       body: Padding(
+//         padding: EdgeInsets.all(16),
+//         child: Column(
+//           children: [
+//             TextField(controller: _emailController, decoration: InputDecoration(labelText: 'Email')),
+//             TextField(controller: _passwordController, decoration: InputDecoration(labelText: 'Password'), obscureText: true),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               onPressed: () => login(context),
+//               child: Text('Login / Register'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class ChatRoom extends StatelessWidget {
+  final String eventTitle;
   final TextEditingController _messageController = TextEditingController();
-  final CollectionReference messages = FirebaseFirestore.instance.collection('messages');
+  // final CollectionReference messages = FirebaseFirestore.instance.collection('messages');
 
-  void sendMessage() {
+  ChatRoom({super.key, required this.eventTitle});
+
+
+  @override
+  Widget build(BuildContext context) {
+
+      final CollectionReference messages = FirebaseFirestore.instance.collection('events').doc(eventTitle).collection('messages');
+
+     void sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
     messages.add({
       'text': _messageController.text.trim(),
@@ -82,21 +91,18 @@ class ChatRoom extends StatelessWidget {
     });
     _messageController.clear();
   }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat Room'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
-            },
-          ),
-        ],
+        title: Text('Chat Room: $eventTitle'),
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.logout),
+        //     onPressed: () async {
+        //       await FirebaseAuth.instance.signOut();
+        //       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
+        //     },
+        //   ),
+        // ],
       ),
       body: Column(
         children: [
@@ -109,8 +115,8 @@ class ChatRoom extends StatelessWidget {
                   reverse: true,
                   children: snapshot.data!.docs.map((doc) {
                     return ListTile(
-                      title: Text(doc['text']),
-                      subtitle: Text(doc['sender']),
+                      title: Text(doc['sender']),
+                      subtitle: Text(doc['text']),
                     );
                   }).toList(),
                 );

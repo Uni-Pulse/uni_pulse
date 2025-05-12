@@ -36,12 +36,13 @@ class _OrgHomePageState extends State<OrgHomePage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: '',
+            label: 'Events',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Profile',
           ),
+          
         ],
       ),
     );
