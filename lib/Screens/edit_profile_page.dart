@@ -59,8 +59,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
+        title:  Text('Delete Account', style: Theme.of(context).textTheme.bodySmall),
+        content:  Text('Are you sure you want to delete your account? This action cannot be undone.', style: Theme.of(context).textTheme.bodySmall,),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(), // Close the dialog
@@ -71,7 +71,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Navigator.of(context).pop(); // Close the dialog
               _deleteAccount();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child:  Text('Delete', style: Theme.of(context).textTheme.bodySmall),
           ),
         ],
       ),
@@ -86,6 +86,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('Edit Profile')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -148,9 +149,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _confirmDeleteAccount,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Red color for delete button
-              ),
               child: const Text('Delete Account'),
             ),
           ],

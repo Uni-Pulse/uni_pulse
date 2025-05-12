@@ -29,8 +29,9 @@ class ListEvents extends ConsumerWidget {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Events'),
+          title: Text('Events'),
           actions: [
             IconButton(
               icon: const Icon(Icons.filter_list),
@@ -54,12 +55,10 @@ class ListEvents extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
-                    decoration: const InputDecoration(
+                    decoration:  InputDecoration(
                       hintText: 'Search',
-                      prefixIcon: Icon(Icons.search),
-                      border: border,
-                      enabledBorder: border,
-                      focusedBorder: border,
+                      prefixIcon: Icon(Icons.search, 
+                      color: Theme.of(context).iconTheme.color),  
                     ),
                     onChanged: (value) {
                       ref.read(searchQueryProvider.notifier).state = value;
@@ -90,8 +89,13 @@ class ListEvents extends ConsumerWidget {
                         date: eventsInfo[index].date,
                         backgroundColor:
                             index.isEven
-                                ? const Color.fromRGBO(216, 240, 253, 1)
-                                : const Color.fromRGBO(245, 247, 249, 1),
+                              ? Theme.of(context).colorScheme.surfaceContainerLow
+                              : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        onDelete: () {
+                          // Handle delete action
+                          ref.read(eventsProvider.notifier).deleteEvent(eventsInfo[index]);
+                        },
+
                       ),
                     );
                   } else {

@@ -18,9 +18,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Edit Profile'),
-        backgroundColor: Color(0xFF660099),
+        backgroundColor:Theme.of(context).colorScheme.surface,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -30,8 +31,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 50,
-                backgroundColor: Color(0xFF0091DA),
-                child: Icon(Icons.person, size: 60, color: Colors.white),
+                backgroundColor:Theme.of(context).colorScheme.surface,
+                child: Icon(Icons.person, size: 60, color:Theme.of(context).colorScheme.primary),
               ),
               SizedBox(height: 20),
 
@@ -39,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Full Name',
-                  border: OutlineInputBorder(),
+                  labelStyle: Theme.of(context).textTheme.bodySmall
                 ),
                 onSaved: (value) => _name = value ?? '',
               ),
@@ -49,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'University Email',
-                  border: OutlineInputBorder(),
+                  labelStyle: Theme.of(context).textTheme.bodySmall
                 ),
                 keyboardType: TextInputType.emailAddress,
                 onSaved: (value) => _email = value ?? '',
@@ -60,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Course',
-                  border: OutlineInputBorder(),
+                  labelStyle: Theme.of(context).textTheme.bodySmall
                 ),
                 onSaved: (value) => _course = value ?? '',
               ),
@@ -69,18 +70,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Student ID
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'Student ID',
-                  border: OutlineInputBorder(),
+                  labelText: 'Student ID', 
+                  labelStyle: Theme.of(context).textTheme.bodySmall
                 ),
                 onSaved: (value) => _studentID = value ?? '',
               ),
               SizedBox(height: 25),
 
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF660099),
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                ),
                 onPressed: () {
                   _formKey.currentState?.save();
                   showDialog(
@@ -92,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       actions: [
                         TextButton(
-                          child: Text('OK', style: TextStyle(color: Color(0xFF660099))),
+                          child: Text('OK', style: Theme.of(context).textTheme.bodySmall),
                           onPressed: () => Navigator.pop(context),
                         )
                       ],
@@ -101,9 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
                 child: Text(
                   'Save Profile',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style:Theme.of(context).textTheme.bodySmall),
                 ),
-              )
             ],
           ),
         ),

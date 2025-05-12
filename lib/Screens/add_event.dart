@@ -55,8 +55,9 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Add a new Event'),
+          title:  Text('Add a new Event', style: Theme.of(context).textTheme.bodyLarge),
         ),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(10),
@@ -70,7 +71,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                 TextField(
                   controller: _titleController,
                   maxLength: 50,
-                  decoration: InputDecoration(label: Text('Event Title')),
+                  decoration: InputDecoration(label: Text('Event Title', style: Theme.of(context).textTheme.bodySmall)),
                 ),
                 SizedBox(
                   height: 100,
@@ -78,7 +79,8 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                     controller: _descriptionController,
                     maxLength: 500,
                     decoration: InputDecoration(
-                        label: Text('Event Description'),
+                        label: Text('Event Description', style: Theme.of(context).textTheme.bodySmall),
+                        hintText: 'Description',
                         border: OutlineInputBorder()),
                   ),
                 ),
@@ -111,7 +113,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: _eventSave,
-                  label: const Text('Add Event'),
+                  label: Text('Add Event', style: Theme.of(context).textTheme.bodyLarge),
                   icon: const Icon(Icons.add),
                 )
               ],

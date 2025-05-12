@@ -27,7 +27,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text("OK"),
+            child: Text("OK",
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
           ),
         ],
       ),
@@ -69,6 +71,7 @@ void handleAuth(WidgetRef ref) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Row(
         children: [
           Expanded(
@@ -80,9 +83,10 @@ void handleAuth(WidgetRef ref) async {
                   Text(
                     "Login",
                     style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: const Color.fromARGB(255, 101, 3, 121)),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                   SizedBox(height: 20),
                   TextField(
@@ -101,8 +105,8 @@ void handleAuth(WidgetRef ref) async {
                   ElevatedButton(
                     onPressed: () => handleAuth(ref),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade400,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding:
                           EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                     ),

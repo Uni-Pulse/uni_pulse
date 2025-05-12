@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Screens/organizations/org_list_events.dart';
-//import 'package:shop_app_flutter/cart_page.dart';
-//import 'package:shop_app_flutter/product_list.dart';
 
 class OrgHomePage extends StatefulWidget {
   const OrgHomePage({super.key});
@@ -18,6 +16,7 @@ class _OrgHomePageState extends State<OrgHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: currentPage,
         children: pages,
@@ -46,4 +45,3 @@ class _OrgHomePageState extends State<OrgHomePage> {
     );
   }
 }
-//inherited widget is used for state management by the flutter framework whenever it wants to talk to the parent widget.

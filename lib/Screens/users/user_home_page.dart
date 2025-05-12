@@ -16,10 +16,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: currentPage,
-        children: pages,
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: IndexedStack(
+          index: currentPage,
+            children: pages,
+        ),
+    ),
       bottomNavigationBar: BottomNavigationBar(
         iconSize: 35,
         selectedFontSize: 0,

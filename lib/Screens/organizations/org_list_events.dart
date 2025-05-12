@@ -14,7 +14,7 @@ import 'package:uni_pulse/Models/events.dart';
 
 
 class OrgListEvents extends ConsumerWidget {
-  OrgListEvents({super.key});
+  const OrgListEvents({super.key});
   // Use a StateProvider to hold the applied filters
 
 
@@ -30,6 +30,7 @@ class OrgListEvents extends ConsumerWidget {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('Events'),
           actions: [
@@ -51,18 +52,21 @@ class OrgListEvents extends ConsumerWidget {
           ],
         ),
         body: Column(
-          children: [TextField(
-            decoration: InputDecoration(
-              hintText: 'Search',
-              prefixIcon: Icon(Icons.search),
-              border: border,
-              enabledBorder: border,
-              focusedBorder: border,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+              ),
+              onChanged: (value) {
+                ref.read(searchQueryProvider.notifier).state = value;
+              },
             ),
-            onChanged: (value) {
-              ref.read(searchQueryProvider.notifier).state = value;
-            },
-        ),              
+          ),
             
             Expanded(
               child: ListView.builder(
@@ -87,8 +91,13 @@ class OrgListEvents extends ConsumerWidget {
                         //image: eventsInfo[index].image,
                         date: eventsInfo[index].date, // Pass the DateTime directly
                         backgroundColor: index.isEven
-                            ? const Color.fromRGBO(216, 240, 253, 1)
-                            : const Color.fromRGBO(245, 247, 249, 1),
+                          ? Theme.of(context).colorScheme.surfaceContainerLow
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        onDelete: () {
+                          // Handle delete action
+                          ref.read(eventsProvider.notifier).deleteEvent(eventsInfo[index]);
+                        },
+
                       ),
                     );
                   } else {

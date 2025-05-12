@@ -1,94 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'package:uni_pulse/Screens/initializing/register_screen.dart';
- 
+
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
-        child: Container(
-          width: 300,
-          height: 500,
-          decoration: BoxDecoration(
-            color: const Color(0xFFD8BFD8), // Light purple background
-            borderRadius: BorderRadius.circular(30),
-          ),
-          padding: const EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Logo Image
-              Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/logo.PNG', // Path to your image
-                    fit: BoxFit.cover,
-                  ),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Logo Image
+            Container(
+              width: 100,
+              height: 100,
+              decoration: const BoxDecoration(shape: BoxShape.circle),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/logo.PNG',
+                  fit: BoxFit.cover,
                 ),
               ),
-              // Title & Subtitle
-              Column(
-                children: const [
-                  Text(
-                    "Title",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "unipulse",
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
-                  ),
-                ],
-              ),
-              // Buttons
-              Column(
-                children: [
-                  SizedBox(
-                    width: 180,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A0DAD), // Dark purple
-                        foregroundColor: Colors.white, // White text
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+            ),
+            // Title & Subtitle
+            Column(
+              children: [
+                // Text(
+                //   "Title",
+                //   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                //         fontWeight: FontWeight.bold,
+                //       ),
+                // ),
+                Text(
+                  "UNI Pulse",
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      onPressed: () { Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const RegisterScreen() ));},
-                      child: const Text("Register"),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: 180,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A0DAD), // Dark purple
-                        foregroundColor: Colors.white, // White text
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                  
+                ),
+              ],
+            ),
+            // Buttons
+            Column(
+              children: [
+                SizedBox(
+                  width: 180,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const RegisterScreen(),
                         ),
-                      ),
-                      onPressed: () {Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const AuthScreen() ));},
-                      child: const Text("Login"),
-                    ),
+                      );
+                    },
+                    child: const Text("Register"),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+                const SizedBox(height: 15),
+                SizedBox(
+                  width: 180,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const AuthScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text("Login"),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
+    ));
   }
 }
-
