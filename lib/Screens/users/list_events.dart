@@ -29,7 +29,7 @@ class ListEvents extends ConsumerWidget {
 
     return SafeArea(
       child: Scaffold(
-        background: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('Events'),
           actions: [

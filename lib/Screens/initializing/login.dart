@@ -28,7 +28,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text("OK"),
-            style: TextStyle(color: Theme.of(context).colorScheme.primary)
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            )
           ),
         ],
       ),
@@ -85,6 +87,7 @@ void handleAuth(WidgetRef ref) async {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                   SizedBox(height: 20),
                   TextField(

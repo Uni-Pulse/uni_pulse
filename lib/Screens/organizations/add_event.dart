@@ -94,7 +94,7 @@ void _eventSave() {
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Add a new Event',style: Theme.of(context).textTheme.bodyLarge),
+          title:  Text('Add a new Event',style: Theme.of(context).textTheme.bodyLarge),
         ),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(10),
@@ -159,7 +159,7 @@ void _eventSave() {
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: _eventSave,
-                  label: const Text('Add Event', style: Theme.of(context).textTheme.bodyLarge),
+                  label: Text('Add Event', style: Theme.of(context).textTheme.bodyLarge),
                   icon: const Icon(Icons.add),
                 )
               ],

@@ -84,7 +84,7 @@ final darkTheme = ThemeData(
   ),
 );
 
-final lightTheme = ThemeData().copyWith(colorScheme: colorScheme,);
+// final lightTheme = ThemeData().copyWith(colorScheme: colorScheme,);
 
 
 
