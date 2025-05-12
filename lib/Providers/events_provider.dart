@@ -70,27 +70,6 @@ class EventNotifier extends StateNotifier<List<EventData>> {
     }
   }
 
-  Future<void> deleteEvent(EventData event) async {
-    try {
-      // Find the Firestore document corresponding to the event
-      final querySnapshot = await firestore
-          .collection('events')
-          .where('eventName', isEqualTo: event.eventName)
-          .where('date', isEqualTo: event.date.toIso8601String())
-          .get();
-
-      for (var doc in querySnapshot.docs) {
-        await firestore.collection('events').doc(doc.id).delete();
-      }
-
-      // Update the local state
-      state = state.where((e) => e != event).toList();
-    } catch (e) {
-      debugPrint('Error deleting event: $e');
-    }
-  }
-}
-
 
 // <> used to add extra type annotation, knows what type it will be expecting
 final eventsProvider =
