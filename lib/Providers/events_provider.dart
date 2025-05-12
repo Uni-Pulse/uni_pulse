@@ -117,6 +117,51 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
+  Future<void> updateUser({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNum,
+    required bool isOrganisation,
+  }) async {
+    try {
+      // Get the current user's ID
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Update the user's data in Firestore
+      await firestore.collection('users').doc(userId).update({
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'phoneNum': int.parse(phoneNum), // Assuming phoneNum is stored as an int
+        'isOrganisation': isOrganisation,
+      });
+
+      // Update the local state for the current user
+      if (currentUser != null) {
+        currentUser = AccountData(
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNum: int.parse(phoneNum),
+          isOrganisation: isOrganisation,
+          dob: currentUser!.dob, // Keep the existing DOB
+        );
+      }
+      
+      // Notify listeners by updating the state
+      state = state.map((user) {
+        if (user.email == email) {
+          return currentUser!;
+        }
+        return user;
+      }).toList();
+    } catch (e) {
+      debugPrint('Error updating user: $e');
+      throw Exception('Failed to update user: $e');
+    }
+  }
+
   AccountData? currentUser; // To store the currently logged-in user
   Future<AccountData?> authenticate(String email, String password) async {
   try {
