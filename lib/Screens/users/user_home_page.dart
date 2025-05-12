@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uni_pulse/Screens/profile_screen.dart';
 import 'package:uni_pulse/Screens/users/list_events.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,7 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentPage = 0;
 
-  List<Widget> pages = [ListEvents()];
+  List<Widget> pages = [ListEvents(), ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {

@@ -36,44 +36,63 @@ class EventNotifier extends StateNotifier<List<EventData>> {
     }
   }
     // Add an event to Firestore and update the state
-  Future<void> addEvent(
-    String eventName, 
-    String organisation, 
-    DateTime date, 
-    String ticketPrice,
-    EventType eventType,
-    String description) async {
-    
-    // final appDir = await syspaths.getApplicationDocumentsDirectory();
-    // final filename = path.basename(image.path);
-    // final copiedImage = await image.copy('${appDir.path}/$filename');
+Future<String> addEvent(
+  String eventName, 
+  String organisation, 
+  DateTime date, 
+  String ticketPrice,
+  EventType eventType,
+  String description) async {
+  
+  // final appDir = await syspaths.getApplicationDocumentsDirectory();
+  // final filename = path.basename(image.path);
+  // final copiedImage = await image.copy('${appDir.path}/$filename');
 
-    try {
+  try {
 
-      // Create a new event object
-      final newEvent = EventData(
-        eventName: eventName,
-        organisation: organisation,
-        date: date,
-        ticketPrice: ticketPrice,
-        eventType: eventType,
-        description: description
-      );
+    // Save the event to Firestore
+    DocumentReference docRef = await firestore.collection('events').add({
+      'eventName': eventName,
+      'organisation': organisation,
+      'date': date.toIso8601String(),
+      'ticketPrice': ticketPrice,
+      'eventType': eventType.name,
+      'description' : description
+    });
 
-      // Save the event to Firestore
-      await firestore.collection('events').add({
-        'eventName': eventName,
-        'organisation': organisation,
-        'date': date.toIso8601String(),
-        'ticketPrice': ticketPrice,
-        'eventType': eventType.name,
-        'desription' : description// Assuming EventType has a 'name' property
-      });
+    // Get the generated document ID
+    String eventId = docRef.id;
+    debugPrint('New Event added with ID: $eventId');
+
+    // Create a new event object
+    final newEvent = EventData(
+      eventName: eventName,
+      organisation: organisation,
+      date: date,
+      ticketPrice: ticketPrice,
+      eventType: eventType,
+      description: description,
+      eventId: eventId
+    );
+    debugPrint('New event added with ID: $eventId');
+
+    //update the local state
+
+    // await firestore.collection('events').add({
+    //   'eventName': eventName,
+    //   'organisation': organisation,
+    //   'date': date.toIso8601String(),
+    //   'ticketPrice': ticketPrice,
+    //   'eventType': eventType.name,
+    //   'desription' : description// Assuming EventType has a 'name' property
+    // });
 
     state = [newEvent, ...state];
+    return eventId; // Return the event ID
   } catch (e) {
-      debugPrint('Error adding event: $e');
-    }
+    debugPrint('Error adding event: $e');
+    rethrow;
+  }
 }
 
  // Fetch events from Firestore and update the state
@@ -83,12 +102,14 @@ class EventNotifier extends StateNotifier<List<EventData>> {
       final events = querySnapshot.docs.map((doc) {
         final data = doc.data();
         return EventData(
+          
           eventName: data['eventName'] as String,
           organisation: data['organisation'] as String, 
           date: DateTime.parse(data['date'] as String),
           ticketPrice: data['ticketPrice'] ,
           eventType: EventType.values.firstWhere((e) => e.name == data['eventType'] as String), // Adjust based on your EventType enum
           description: data['description'] as String, // Assuming description is stored in Firestore
+          eventId: doc.id, // Use the document ID as the event ID
         );
       }).toList();
 

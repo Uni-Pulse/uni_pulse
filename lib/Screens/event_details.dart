@@ -52,7 +52,7 @@ class EventDetailsScreen extends StatelessWidget {
             
 
             ElevatedButton(onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatRoom(eventTitle: event.eventName,),),);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatRoom(eventTitle: event.eventName, eventId: event.eventId,),),);
             }, child: const Text('Open Room')),
 
             const SizedBox(height: 15),

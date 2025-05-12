@@ -72,7 +72,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile Details'),
-        backgroundColor: Color(0xFF660099),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         
       ),
       body: Padding(

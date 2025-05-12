@@ -12,7 +12,8 @@ class EventData {
     required this.date, 
     required this.ticketPrice,
     required this.eventType,
-    required this.description
+    required this.description,
+    required this.eventId,
   });
 
   //final File image;
@@ -22,6 +23,7 @@ class EventData {
   final String ticketPrice;
   final EventType eventType;
   final String description;
+  final String eventId;
 }
 
 
