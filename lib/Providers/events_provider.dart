@@ -88,7 +88,7 @@ class EventNotifier extends StateNotifier<List<EventData>> {
           date: DateTime.parse(data['date'] as String),
           ticketPrice: data['ticketPrice'] ,
           eventType: EventType.values.firstWhere((e) => e.name == data['eventType'] as String), // Adjust based on your EventType enum
-          description: data['desription'] as String, // Assuming description is stored in Firestore
+          description: data['description'] as String, // Assuming description is stored in Firestore
         );
       }).toList();
 

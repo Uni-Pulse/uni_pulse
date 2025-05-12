@@ -54,7 +54,7 @@ void _eventSave() {
     return;
   }
 
-    debugPrint('Saving event...');
+  debugPrint('Saving event...');
   debugPrint('Title: ${_titleController.text}');
   debugPrint('Organisation: $_organisationName');
   debugPrint('Date: $_selectedDate');
@@ -117,45 +117,45 @@ void _eventSave() {
                   ),
                 ),
                 Row(
-  children: [
-    IconButton(
-      onPressed: _eventdatepicker,
-      icon: const Icon(Icons.calendar_month),
-    ),
-    const Text('Event Date: '),
-    Text(_selectedDate == null
-        ? 'No date selected'
-        : formatter.format(_selectedDate!)),
-    const SizedBox(width: 20),
-    Expanded(
-      child: DropdownButton<EventType>(
-        value: _eventType,
-        items: EventType.values.map((eventType) {
-          return DropdownMenuItem<EventType>(
-            value: eventType,
-            child: Text(eventType.name),
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            _eventType = value!;
-          });
-        },
-      ),
-    ),
-    const SizedBox(width: 10),
-    Expanded(
-      child: TextField(
-        controller: _ticketPriceController,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-        ],
-        decoration: const InputDecoration(labelText: 'Ticket Price'),
-      ),
-    ),
-  ],
-),
+                  children: [
+                    IconButton(
+                      onPressed: _eventdatepicker,
+                      icon: const Icon(Icons.calendar_month),
+                    ),
+                    const Text('Event Date: '),
+                    Text(_selectedDate == null
+                        ? 'No date selected'
+                        : formatter.format(_selectedDate!)),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: DropdownButton<EventType>(
+                        value: _eventType,
+                        items: EventType.values.map((eventType) {
+                          return DropdownMenuItem<EventType>(
+                            value: eventType,
+                            child: Text(eventType.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _eventType = value!;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _ticketPriceController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(labelText: 'Ticket Price'),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: _eventSave,
