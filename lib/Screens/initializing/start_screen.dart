@@ -30,7 +30,7 @@ class StartScreen extends StatelessWidget {
                 ),
                 child: ClipOval(
                   child: Image.asset(
-                    'assets/logo.png', // Path to your image
+                    'assets/logo.PNG', // Path to your image
                     fit: BoxFit.cover,
                   ),
                 ),

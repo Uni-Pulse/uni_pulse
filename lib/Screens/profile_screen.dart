@@ -1,26 +1,79 @@
-import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatefulWidget {
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:uni_pulse/Providers/events_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() {
+    return _ProfileScreenState();
+  }
+  
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  late Future<dynamic> currentUserFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUserFuture = Future.value(ref.read(accountsProvider.notifier).currentUser);
+  }
+
   String _name = '';
+  String _lastname = '';
   String _email = '';
-  String _course = '';
-  String _studentID = '';
+  int _phonenum = 0 ;
+
+  final List<Map<String, String>> starredEvents = [
+    {
+      'title': 'Tech Networking Event',
+      'date': 'March 25, 2025',
+      'location': 'Building A'
+    },
+    {
+      'title': 'AI & ML Seminar',
+      'date': 'May 5, 2025',
+      'location': 'Library Hall'
+    },
+    {
+      'title': 'Career Fair',
+      'date': 'July 20, 2025',
+      'location': 'Main Auditorium'
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: currentUserFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final currentUser = snapshot.data;
+          _name = currentUser.firstName;
+          _email = currentUser.email;
+          _lastname = currentUser.lastName;
+          _phonenum = currentUser.phoneNum;
+
+
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
+        title: Text('Profile Details'),
         backgroundColor: Color(0xFF660099),
+        
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -37,18 +90,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // Name
               TextFormField(
+                initialValue: _name,
                 decoration: InputDecoration(
-                  labelText: 'Full Name',
+                  labelText: 'First Name',
                   border: OutlineInputBorder(),
                 ),
                 onSaved: (value) => _name = value ?? '',
               ),
               SizedBox(height: 15),
 
+                // Last Name
+              TextFormField(
+                initialValue: _lastname,
+                decoration: InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(),
+                ),
+                onSaved: (value) => _lastname = value ?? '',
+              ),
+              SizedBox(height: 15),
+
+
               // Email
               TextFormField(
+                initialValue: _email,
                 decoration: InputDecoration(
-                  labelText: 'University Email',
+                  labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -56,58 +123,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               SizedBox(height: 15),
 
-              // Course
+              // Phone Number
               TextFormField(
+                initialValue: _phonenum.toString(),
                 decoration: InputDecoration(
-                  labelText: 'Course',
+                  labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                 ),
-                onSaved: (value) => _course = value ?? '',
+                keyboardType: TextInputType.phone,
+                onSaved: (value) => _lastname = value ?? '',
               ),
               SizedBox(height: 15),
 
-              // Student ID
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Student ID',
-                  border: OutlineInputBorder(),
-                ),
-                onSaved: (value) => _studentID = value ?? '',
-              ),
-              SizedBox(height: 25),
-
+          
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF660099),
                   padding: EdgeInsets.symmetric(vertical: 15),
                 ),
-                onPressed: () {
-                  _formKey.currentState?.save();
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: Text('Profile Saved'),
-                      content: Text(
-                        'Name: $_name\nEmail: $_email\nCourse: $_course\nID: $_studentID',
-                      ),
-                      actions: [
-                        TextButton(
-                          child: Text('OK', style: TextStyle(color: Color(0xFF660099))),
-                          onPressed: () => Navigator.pop(context),
-                        )
-                      ],
-                    ),
-                  );
-                },
+                onPressed: () async {
+  // Save the form data
+  if (_formKey.currentState?.validate() ?? false) {
+    _formKey.currentState?.save();
+
+    try {
+      // Get the current user's ID
+      final userEmail = FirebaseAuth.instance.currentUser!.email;
+
+      // Update the user's data in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userEmail).update({
+        'firstName': _name,
+        'lastName': _lastname,
+        'email': _email,
+        'phoneNum': _phonenum.toString(), // Ensure phoneNum is saved as a String
+      });
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully!')),
+      );
+    } catch (e) {
+      // Handle errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile: $e')),
+      );
+    }
+  }
+},
                 child: Text(
                   'Save Profile',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
-              )
+              ),
+
+              SizedBox(height: 30),
+              Text(
+                '⭐ Starred Events',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+
+              // Scrollable List of Starred Events
+              ...starredEvents.map((event) => Card(
+                    elevation: 3,
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: Icon(Icons.event, color: Color(0xFF0091DA)),
+                      title: Text(event['title']!, style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text('${event['date']} • ${event['location']}'),
+                    ),
+                  )),
             ],
           ),
         ),
       ),
     );
   }
-}
+   } );
+}}

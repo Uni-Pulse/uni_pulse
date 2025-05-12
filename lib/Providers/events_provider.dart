@@ -1,6 +1,4 @@
 
-
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:path_provider/path_provider.dart' as syspaths;
 // import 'package:path/path.dart' as path;
@@ -8,34 +6,68 @@ import 'package:uni_pulse/Models/acconts.dart';
 import 'package:uni_pulse/Models/events.dart';  
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
+ // Import for firstWhereOrNull
 import 'package:firebase_auth/firebase_auth.dart';
+
 
 class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  
+
+     Future<void> deleteEvent(EventData event) async {
+    try {
+      // Delete the event from Firestore
+      final eventDoc = await firestore
+          .collection('events')
+          .where('eventName', isEqualTo: event.eventName)
+          .where('date', isEqualTo: event.date)
+          .limit(1)
+          .get();
+
+      if (eventDoc.docs.isNotEmpty) {
+        await firestore.collection('events').doc(eventDoc.docs.first.id).delete();
+      }
+
+      // Update the local state
+      state = state.where((e) => e != event).toList();
+    } catch (e) {
+      debugPrint('Error deleting event: $e');
+    }
+  }
     // Add an event to Firestore and update the state
-  Future<void> addEvent(String eventName, Organisations organisation, DateTime date, double ticketPrice) async {
+  Future<void> addEvent(
+    String eventName, 
+    String organisation, 
+    DateTime date, 
+    String ticketPrice,
+    EventType eventType,
+    String description) async {
+    
     // final appDir = await syspaths.getApplicationDocumentsDirectory();
     // final filename = path.basename(image.path);
     // final copiedImage = await image.copy('${appDir.path}/$filename');
 
     try {
+
       // Create a new event object
       final newEvent = EventData(
         eventName: eventName,
         organisation: organisation,
         date: date,
         ticketPrice: ticketPrice,
+        eventType: eventType,
+        description: description
       );
 
       // Save the event to Firestore
       await firestore.collection('events').add({
         'eventName': eventName,
-        'organisation': organisation.name, // Assuming Organisations has a 'name' property
+        'organisation': organisation,
         'date': date.toIso8601String(),
         'ticketPrice': ticketPrice,
+        'eventType': eventType.name,
+        'desription' : description// Assuming EventType has a 'name' property
       });
 
     state = [newEvent, ...state];
@@ -52,9 +84,11 @@ class EventNotifier extends StateNotifier<List<EventData>> {
         final data = doc.data();
         return EventData(
           eventName: data['eventName'] as String,
-          organisation: Organisations.values.firstWhere((e) => e.name == data['organisation'] as String), // Adjust based on your Organisations enum
+          organisation: data['organisation'] as String, 
           date: DateTime.parse(data['date'] as String),
-          ticketPrice: data['ticketPrice'] as double,
+          ticketPrice: data['ticketPrice'] ,
+          eventType: EventType.values.firstWhere((e) => e.name == data['eventType'] as String), // Adjust based on your EventType enum
+          description: data['desription'] as String, // Assuming description is stored in Firestore
         );
       }).toList();
 
@@ -77,58 +111,178 @@ final eventsProvider =
 
 
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-  AccountNotifier() : super(const []);
+  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
+    AccountData(firstName: 'org',lastName: '', email: 'org', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
+  Future<void> updateUser({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNum,
+    required bool isOrganisation,
+  }) async {
+    try {
+      // Get the current user's ID
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Update the user's data in Firestore
+      await firestore.collection('users').doc(userId).update({
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'phoneNum': int.parse(phoneNum), // Assuming phoneNum is stored as an int
+        'isOrganisation': isOrganisation,
+      });
+
+      // Update the local state for the current user
+      if (currentUser != null) {
+        currentUser = AccountData(
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNum: int.parse(phoneNum),
+          isOrganisation: isOrganisation,
+          dob: currentUser!.dob, // Keep the existing DOB
+        );
+      }
+      
+      // Notify listeners by updating the state
+      state = state.map((user) {
+        if (user.email == email) {
+          return currentUser!;
+        }
+        return user;
+      }).toList();
+    } catch (e) {
+      debugPrint('Error updating user: $e');
+      throw Exception('Failed to update user: $e');
+    }
+  }
+
+  AccountData? currentUser; // To store the currently logged-in user
+  Future<AccountData?> authenticate(String email, String password) async {
+  try {
+    // Authenticate the user with Firebase Authentication
+    final userCredential = await auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final String? uid = userCredential.user?.uid;
+
+    // Check if the UID actually was gotten
+    if (uid == null) {
+      debugPrint('Error: User ID is null after successful login.');
+      return null;
+    }
+
+    // Fetch the user's details from Firestore
+    final userDoc = await firestore.collection('users').doc(uid).get();
+
+    if (userDoc.exists && userDoc.data() != null) {
+      final data = userDoc.data()!;
+      final loggedInUser = AccountData(
+        email: data['email'] as String,
+        // password: data['password'] as String,
+        isOrganisation: data['isOrganisation'] as bool,
+        firstName: data['firstName'] as String,
+        lastName: data['lastName'] as String,
+        phoneNum: data['phoneNum'] as int,
+        dob: DateTime.parse(data['dob'] as String),
+      );
+
+      currentUser = loggedInUser;
+      return loggedInUser; // Return the logged-in user's details
+    } else {
+      debugPrint('No user details documents found in Firsetore for UID: $uid');
+      return null;
+    }
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      debugPrint('No user found for that email.');
+    } else if (e.code == 'wrong-password') {
+      debugPrint('Wrong password provided.');
+    }else if (e.code == 'user-diabled'){
+      debugPrint('User account is disabled.');
+    } 
+    else {
+      debugPrint('FirebaseAuthException: ${e.message}');
+    }
+    return null;
+  } catch (e) {
+    debugPrint('Error during authentication: $e');
+    return null;
+  }
+}
+
   // Add a new user account to Firestore
-  Future<void> registerUser(String firstName, String lastName, String phoneNumber,String email, String password, DateTime dob, bool isOrganisation) async {
+  Future<String?> registerUser(
+    String firstName, 
+    String lastName, 
+    String phoneNumber,
+    String email, 
+    String password, 
+    DateTime dob, 
+    bool isOrganisation) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      // Create a new account object
-      final newAccount = AccountData(
+      final String? uid = userCredential.user?.uid;
 
+      if (uid == null) {
+        debugPrint('Error: User ID is null after registration.');
+        return 'An unexpected error occured: UID not fouund';
+      }
+      // if authentication succeeds, create a new user account
+      final newAccount = AccountData(
 
 
         firstName: firstName,
         lastName: lastName,
-        phoneNum: int.parse(phoneNumber), // Assuming phone number
+        phoneNum: int.parse(phoneNumber), // Assuming phone number is stored as an int
+
         email: email,
-        password: password,
+        // password: password,
         dob: dob,
         isOrganisation: isOrganisation,
       );
 
       // Save the account to Firestore
-      await firestore.collection('users').add({
+      await firestore.collection('users').doc(uid).set({
         'firstName': firstName,
         'lastName': lastName,
         'phoneNum': int.parse(phoneNumber),
         'email': email,
-        'password': password, // Note: Storing plain text passwords is insecure. Use hashing instead.
         'dob': dob.toIso8601String(),
         'isOrganisation': isOrganisation,
+        'uid': uid,
          // Store date as a string in ISO format
       });
 
       // Update the local state
       state = [newAccount, ...state];
+      return null; // Return null if registration is successful
     } on FirebaseAuthException catch (e){
+      debugPrint('FirebaseAuthException during registeration: ${e.code}');
+      String errorMessage;
       if (e.code == 'email-already-in-use'){
-        debugPrint('Email already in use. Please use a different email.');
+        errorMessage = 'Email already in use.';
       } else if (e.code == 'weak-password') {
-        debugPrint('The password provided is too weak.');
+        errorMessage = 'Password is too weak.';
       } else if (e.code == 'invalid-email') {
-        debugPrint('The email address is not valid.');
+        errorMessage = 'Invalid email address.';
       } else {
-        debugPrint('Error registering user: ${e.message}');
+        errorMessage = 'Authentication error: ${e.message}';
       }
+      return errorMessage; // Return the error message if registration fails
     }catch (e) {
-      debugPrint('Error registering user: $e');
+      debugPrint('Genereal error during registration: $e');
+      return 'An unexpected error occurred: $e'; // Return a generic error message
     }
   }
 
@@ -138,10 +292,10 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final querySnapshot = await firestore.collection('users').get();
       final users = querySnapshot.docs.map((doc) {
         final data = doc.data();
-        debugPrint('Fetched user data: $data'); // Debug print to check fetched data
+        debugPrint('Fetched user: $data');
         return AccountData(
           email: data['email'] as String,
-          password: data['password'] as String,
+          // password: data['password'] as String,
           isOrganisation: data['isOrganisation'] as bool,
           firstName: data['firstName'] as String,
           lastName: data['lastName'] as String,

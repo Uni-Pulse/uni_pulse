@@ -17,7 +17,7 @@
 
 class AccountData {
   final String email;
-  final String password; // Added password field
+  // final String password; // Added password field
   final bool isOrganisation;
   final String firstName;
   final String lastName;
@@ -26,7 +26,7 @@ class AccountData {
 
   AccountData({
     required this.email,
-    required this.password, // Added password to constructor
+    // required this.password, // Added password to constructor
     required this.isOrganisation,
     required this.firstName,
     required this.lastName,

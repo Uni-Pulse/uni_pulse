@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+// import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:uni_pulse/Screens/organizations/org_home.dart';
 import 'package:uni_pulse/Screens/users/user_home_page.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AuthScreen extends StatefulWidget {
+class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
   @override
-  State<AuthScreen> createState() {return _AuthScreenState();}
+  ConsumerState<AuthScreen> createState() {return _AuthScreenState();}
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends ConsumerState<AuthScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
@@ -25,40 +28,49 @@ class _AuthScreenState extends State<AuthScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text("OK"),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary)
           ),
         ],
       ),
     );
   }
 
-  void handleAuth() {
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
+void handleAuth(WidgetRef ref) async {
+  String email = emailController.text.trim();
+  String password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      showErrorDialog("All fields are required.");
-      return;
-    }
+  if (email.isEmpty || password.isEmpty) {
+    showErrorDialog("All fields are required.");
+    return;
+  }
 
-    if (email == 'user' && password == '123') {
+  try {
+    final account = await ref.read(accountsProvider.notifier).authenticate(email, password);
+
+    if (account != null) {
       Navigator.pop(context);
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (ctx) => HomePage()));
-          return;
-    }
-    if (email == 'org' && password == '123') {
-      Navigator.pop(context);
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (ctx) => OrgHomePage()));
-          return;
+      if (account.isOrganisation) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => OrgHomePage()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => HomePage()),
+        );
+      }
     } else {
       showErrorDialog("Invalid credentials. Please try again.");
     }
+  } catch (e) {
+    showErrorDialog("An error occurred during login. Please try again.");
+    debugPrint('Error during login: $e');
   }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Row(
         children: [
           Expanded(
@@ -72,7 +84,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: const Color.fromARGB(255, 101, 3, 121)),
+                        color: Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(height: 20),
                   TextField(
@@ -89,10 +101,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: handleAuth,
+                    onPressed: () => handleAuth(ref),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade400,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding:
                           EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                     ),

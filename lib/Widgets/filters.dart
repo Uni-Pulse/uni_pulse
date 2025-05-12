@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uni_pulse/Models/events.dart';
 
 class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
@@ -65,15 +66,10 @@ class FilterPageState extends State<FilterPage> {
                 });
               },
               items:
-                  <String>[
-                    'Sports',
-                    'Entertainment',
-                    'Career',
-                    'Crafts',
-                  ].map<DropdownMenuItem<String>>((String value) {
+                  EventType.values.map<DropdownMenuItem<String>>((EventType value) {
                     return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
+                      value: value.toString().split('.').last,
+                      child: Text(value.toString().split('.').last),
                     );
                   }).toList(),
             ),

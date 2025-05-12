@@ -6,10 +6,14 @@ import 'package:uni_pulse/Widgets/filters.dart';
 import 'package:uni_pulse/Providers/events_provider.dart'; // Import the events provider
 import 'package:uni_pulse/Models/events.dart';
 
+
+final appliedFiltersProvider = StateProvider<Map<String, dynamic>>((ref) => {});
+  final searchQueryProvider = StateProvider<String>((ref) => '');
 class ListEvents extends ConsumerWidget {
   ListEvents({super.key});
   // Use a StateProvider to hold the applied filters
-  final appliedFiltersProvider = StateProvider<Map<String, dynamic>>((ref) => {});
+  
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +29,7 @@ class ListEvents extends ConsumerWidget {
 
     return SafeArea(
       child: Scaffold(
+        background: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('Events'),
           actions: [
@@ -45,18 +50,24 @@ class ListEvents extends ConsumerWidget {
         ),
         body: Column(
           children: [
-            const Expanded(
-              flex: 1,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  prefixIcon: Icon(Icons.search),
-                  border: border,
-                  enabledBorder: border,
-                  focusedBorder: border,
+            Expanded(
+                flex: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Search',
+                      prefixIcon: Icon(Icons.search),
+                      border: border,
+                      enabledBorder: border,
+                      focusedBorder: border,
+                    ),
+                    onChanged: (value) {
+                      ref.read(searchQueryProvider.notifier).state = value;
+                    },
+                  ),
                 ),
               ),
-            ),
             Expanded(
               child: ListView.builder(
                 itemCount: eventsInfo.length, // Using global products here
@@ -75,7 +86,7 @@ class ListEvents extends ConsumerWidget {
                       },
                       child: EventCard(
                         eventname: eventsInfo[index].eventName,
-                        ticketPrice: eventsInfo[index].ticketPrice,
+                        ticketPrice: double.parse(eventsInfo[index].ticketPrice),
                         //image: eventsInfo[index].image,
                         date: eventsInfo[index].date,
                         backgroundColor:
@@ -96,36 +107,40 @@ class ListEvents extends ConsumerWidget {
     );
   }
 
-  bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
-    final appliedFilters = ref.watch(appliedFiltersProvider);
+ bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
+  final appliedFilters = ref.watch(appliedFiltersProvider);
+  final searchQuery = ref.watch(searchQueryProvider).toLowerCase();
 
-    if (appliedFilters.isEmpty) {
-      return true;
-    }
+  // Search filter
+  if (searchQuery.isNotEmpty &&
+      !product.eventName.toLowerCase().contains(searchQuery)) {
+    return false;
+  }
 
-    if (appliedFilters['category'] != null &&
-        appliedFilters['category'] != product) {
-      return false;
-    }
+  // Category filter
+  if (appliedFilters['category'] != null &&
+      appliedFilters['category'] != product) {
+    return false;
+  }
 
-    if (appliedFilters['price'] != null) {
-      var priceRange = appliedFilters['price'];
+  // Price filter
+  if (appliedFilters['price'] != null) {
+    var priceRange = appliedFilters['price'];
 
-      if (priceRange is Map &&
-          priceRange['min'] != null &&
-          priceRange['max'] != null) {
-        double productPrice = product.ticketPrice;
+    if (priceRange is Map &&
+        priceRange['min'] != null &&
+        priceRange['max'] != null) {
+      double productPrice = double.parse(product.ticketPrice);
 
-        // Use default values if priceRange is incomplete
-        double minPrice = priceRange['min'] ?? 0.0;
-        double maxPrice = priceRange['max'] ?? 50.0;
+      double minPrice = priceRange['min'] ?? 0.0;
+      double maxPrice = priceRange['max'] ?? 50.0;
 
-        if (productPrice < minPrice || productPrice > maxPrice) {
-          return false; // Filter by price range
-        }
+      if (productPrice < minPrice || productPrice > maxPrice) {
+        return false;
       }
     }
-
-    return true; // Ensure a return value in all code paths
   }
+
+  return true;
+}
 }

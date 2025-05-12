@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Screens/organizations/org_list_events.dart';
+import 'package:uni_pulse/Screens/profile_screen.dart';
 //import 'package:shop_app_flutter/cart_page.dart';
 //import 'package:shop_app_flutter/product_list.dart';
 
@@ -13,11 +14,12 @@ class OrgHomePage extends StatefulWidget {
 class _OrgHomePageState extends State<OrgHomePage> {
   int currentPage = 0;
 
-  List<Widget> pages = [OrgListEvents()];
+  List<Widget> pages = [OrgListEvents(),ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: currentPage,
         children: pages,
@@ -35,12 +37,13 @@ class _OrgHomePageState extends State<OrgHomePage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: '',
+            label: 'Events',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Profile',
           ),
+          
         ],
       ),
     );

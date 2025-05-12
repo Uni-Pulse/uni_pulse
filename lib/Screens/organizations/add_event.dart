@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Models/events.dart';
+import 'package:flutter/services.dart';// used to only allow numeric inputs in the ticket price
 
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Widgets/image_controller.dart';
@@ -21,23 +22,59 @@ class AddEventScreen extends ConsumerStatefulWidget {
 }
 
 class _AddEventState extends ConsumerState<AddEventScreen> {
-  File? _eventImage;
   final _titleController = TextEditingController();
   DateTime? _selectedDate;
   final _descriptionController = TextEditingController();
-  Organisations _selectedOrganisation = Organisations.unipulse;
-  double ticketPrice = 0.0;
+  EventType _eventType = EventType.other;
+  final _ticketPriceController = TextEditingController();
+  late final _currentUser;
+  late final _organisationName; // this should be dynamic, but for now it is hardcoded
 
-  void _eventSave() {
-    // if (_eventImage == null) { // add nore logic here if things are missing
-    //   return;
-    // }
-    ref.read(eventsProvider.notifier).addEvent(//_eventImage!,
-        _titleController.text, _selectedOrganisation, _selectedDate!,ticketPrice);
-
-    Navigator.of(context)
-        .pop(); //Leaves creen once button is pressed, takes the screen off of the stack
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = ref.read(accountsProvider.notifier).currentUser;
+    if (_currentUser == null) {
+    // Handle the case where the user is not logged in
+    debugPrint('Error: No user is currently logged in.');
+    _organisationName = 'Unknown Organisation'; // Fallback value
+  } else {
+    _organisationName = _currentUser.firstName;
   }
+  }
+
+
+void _eventSave() {
+  if (_titleController.text.isEmpty ||
+      _selectedDate == null ||
+      _ticketPriceController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill in all required fields.')),
+    );
+    return;
+  }
+
+    debugPrint('Saving event...');
+  debugPrint('Title: ${_titleController.text}');
+  debugPrint('Organisation: $_organisationName');
+  debugPrint('Date: $_selectedDate');
+  debugPrint('Ticket Price: ${_ticketPriceController.text}');
+  debugPrint('Event Type: $_eventType');
+  debugPrint('Description: ${_descriptionController.text}');
+  debugPrint('Current User Email: ${_currentUser?.email}');
+
+
+  ref.read(eventsProvider.notifier).addEvent(
+        _titleController.text,
+        _organisationName,
+        _selectedDate!,
+        _ticketPriceController.text,
+        _eventType,
+        _descriptionController.text,
+      );
+
+  Navigator.of(context).pop(); // Close the screen after saving
+}
 
   _eventdatepicker() async {
     final now = DateTime.now();
@@ -55,22 +92,18 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Add a new Event'),
+          title: const Text('Add a new Event',style: Theme.of(context).textTheme.bodyLarge),
         ),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(10),
             child: Column(
               children: [
-                ImageCamera(
-                  onEventImage: (image) {
-                    _eventImage = image;
-                  },
-                ),
                 TextField(
                   controller: _titleController,
                   maxLength: 50,
-                  decoration: InputDecoration(label: Text('Event Title')),
+                  decoration: InputDecoration(label: Text('Event Title', style: Theme.of(context).textTheme.bodySmall)),
                 ),
                 SizedBox(
                   height: 100,
@@ -78,40 +111,55 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                     controller: _descriptionController,
                     maxLength: 500,
                     decoration: InputDecoration(
-                        label: Text('Event Description'),
+                        label: Text('Event Description', style: Theme.of(context).textTheme.bodySmall),
+                        hintText: 'Description',
                         border: OutlineInputBorder()),
                   ),
                 ),
                 Row(
-                  children: [
-                    IconButton(
-                        onPressed: _eventdatepicker,
-                        icon: const Icon(Icons.calendar_month)),
-                    Text('Event Date : '),
-                    Text(_selectedDate == null
-                        ? 'No date selected'
-                        : formatter.format(_selectedDate!)),
-                    const SizedBox(width: 40),
-                    DropdownButton<Organisations>(
-                      value: _selectedOrganisation,
-                      items: Organisations.values.map((organisation) {
-                        return DropdownMenuItem(
-                          value: organisation,
-                          child: Text(organisation.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedOrganisation = value!;
-                        });
-                      },
-                    )
-                  ],
-                ),
+  children: [
+    IconButton(
+      onPressed: _eventdatepicker,
+      icon: const Icon(Icons.calendar_month),
+    ),
+    const Text('Event Date: '),
+    Text(_selectedDate == null
+        ? 'No date selected'
+        : formatter.format(_selectedDate!)),
+    const SizedBox(width: 20),
+    Expanded(
+      child: DropdownButton<EventType>(
+        value: _eventType,
+        items: EventType.values.map((eventType) {
+          return DropdownMenuItem<EventType>(
+            value: eventType,
+            child: Text(eventType.name),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _eventType = value!;
+          });
+        },
+      ),
+    ),
+    const SizedBox(width: 10),
+    Expanded(
+      child: TextField(
+        controller: _ticketPriceController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        decoration: const InputDecoration(labelText: 'Ticket Price'),
+      ),
+    ),
+  ],
+),
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: _eventSave,
-                  label: const Text('Add Event'),
+                  label: const Text('Add Event', style: Theme.of(context).textTheme.bodyLarge),
                   icon: const Icon(Icons.add),
                 )
               ],
