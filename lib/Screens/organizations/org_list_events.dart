@@ -35,6 +35,7 @@ Widget build(BuildContext context, WidgetRef ref) {
 
   return SafeArea(
     child: Scaffold(
+      background. Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('My Events'),
         actions: [
@@ -57,17 +58,18 @@ Widget build(BuildContext context, WidgetRef ref) {
       ),
       body: Column(
         children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search',
-              prefixIcon: const Icon(Icons.search),
-              border: border,
-              enabledBorder: border,
-              focusedBorder: border,
-            ),
-            onChanged: (value) {
-              ref.read(searchQueryProvider.notifier).state = value;
-            },
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+              ),
+              onChanged: (value) {
+                ref.read(searchQueryProvider.notifier).state = value;
+              },
           ),
           Expanded(
   child: ListView.builder(

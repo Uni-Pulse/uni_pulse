@@ -116,9 +116,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Register"),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -217,6 +217,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     isOrganisation = value;
                   });
                 },
+                activeColor: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 20),
               ElevatedButton(

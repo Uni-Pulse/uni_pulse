@@ -19,6 +19,7 @@ class _OrgHomePageState extends State<OrgHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: currentPage,
         children: pages,

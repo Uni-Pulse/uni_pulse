@@ -12,6 +12,7 @@ class EventDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     
     return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(title: Text('Event Details')),
         body: Column(
           children: [

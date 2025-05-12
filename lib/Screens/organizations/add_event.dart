@@ -92,8 +92,9 @@ void _eventSave() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Add a new Event'),
+          title: const Text('Add a new Event',style: Theme.of(context).textTheme.bodyLarge),
         ),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(10),
@@ -102,7 +103,7 @@ void _eventSave() {
                 TextField(
                   controller: _titleController,
                   maxLength: 50,
-                  decoration: InputDecoration(label: Text('Event Title')),
+                  decoration: InputDecoration(label: Text('Event Title', style: Theme.of(context).textTheme.bodySmall)),
                 ),
                 SizedBox(
                   height: 100,
@@ -110,7 +111,8 @@ void _eventSave() {
                     controller: _descriptionController,
                     maxLength: 500,
                     decoration: InputDecoration(
-                        label: Text('Event Description'),
+                        label: Text('Event Description', style: Theme.of(context).textTheme.bodySmall),
+                        hintText: 'Description',
                         border: OutlineInputBorder()),
                   ),
                 ),
@@ -157,7 +159,7 @@ void _eventSave() {
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: _eventSave,
-                  label: const Text('Add Event'),
+                  label: const Text('Add Event', style: Theme.of(context).textTheme.bodyLarge),
                   icon: const Icon(Icons.add),
                 )
               ],
