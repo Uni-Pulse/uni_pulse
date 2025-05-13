@@ -42,7 +42,7 @@ class FilterPageState extends State<FilterPage> {
             'price': {'min': minPrice, 'max': maxPrice},
             'category': selectedCategory,
           };
-          debugPrint('s: $filters');
+          debugPrint('Apllied filters: $filters');
           // Return the filters back to the ListEvents page
           Navigator.pop(context, filters);
         },
