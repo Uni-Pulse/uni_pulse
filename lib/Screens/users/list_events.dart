@@ -119,9 +119,9 @@ class ListEvents extends ConsumerWidget {
 
   // Category filter
   if (appliedFilters['category'] != null &&
-      appliedFilters['category'] != product) {
-    return false;
-  }
+    appliedFilters['category'] != product.eventType.toString().split('.').last) {
+  return false;
+}
 
   // Price filter
   if (appliedFilters['price'] != null) {
