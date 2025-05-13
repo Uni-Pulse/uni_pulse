@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Models/events.dart';
+import 'package:uni_pulse/Screens/organizations/add_event.dart';
 
 class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
@@ -33,18 +34,18 @@ class FilterPageState extends State<FilterPage> {
           // Apply Button to pass the filters back
           IconButton(
             icon: const Icon(Icons.check),
-            onPressed: () {
-              // Create a map of the selected filters
-              Map<String, dynamic> filters = {
-                'date': selectedDate,
-                'organisation': selectedOrganisation,
-                'price': {'min': minPrice, 'max': maxPrice},
-                'category': selectedCategory,
-              };
+        onPressed: () async {
+          // Create a map of the selected filters
+          Map<String, dynamic> filters = {
+            'date': selectedDate,
+            'organisation': selectedOrganisation,
+            'price': {'min': minPrice, 'max': maxPrice},
+            'category': selectedCategory,
+          };
 
-              // Return the filters back to the ListEvents page
-              Navigator.pop(context, filters);
-            },
+          // Return the filters back to the ListEvents page
+          Navigator.pop(context, filters);
+        },
           ),
         ],
       ),
@@ -56,7 +57,9 @@ class FilterPageState extends State<FilterPage> {
             // Category Dropdown
             const Text('Category'),
             DropdownButton<String>(
-              value: selectedCategory,
+              value: EventType.values.map((e) => e.toString().split('.').last).contains(selectedCategory)
+                ? selectedCategory
+                : null,
               hint: const Text('Select Category'),
               onChanged: (String? newValue) {
                 setState(() {
@@ -81,13 +84,9 @@ class FilterPageState extends State<FilterPage> {
               max: 50.0,
               divisions: 50,
               labels: RangeLabels(
-                minPrice.toStringAsFixed(
-                  0,
-                ), // Rounds the value to a whole number
-                maxPrice.toStringAsFixed(
-                  0,
-                ), // Rounds the value to a whole number
-              ),
+                minPrice.round().toString(),
+                maxPrice.round().toString(),
+              ), // Rounds the value to a whole number
               onChanged: (RangeValues values) {
                 setState(() {
                   minPrice = values.start;
@@ -103,37 +102,31 @@ class FilterPageState extends State<FilterPage> {
               title: Text(
                 selectedDate == null
                     ? 'No date selected'
-                    : '${selectedDate?.toLocal()}'.split(' ')[0],
+                    : formatter.format(selectedDate!),
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: _selectDate,
             ),
             const SizedBox(height: 16),
 
-            // // Location Dropdown
-            // const Text('Location'),
-            // DropdownButton<String>(
-            //   value: selectedLocation,
-            //   hint: const Text('Select Location'),
-            //   onChanged: (String? newValue) {
-            //     setState(() {
-            //       selectedLocation = newValue;
-            //     });
-            //   },
-            // //   items:
-            //       locations.map<DropdownMenuItem<String>>((String value) {
-            //         return DropdownMenuItem<String>(
-            //           value: value,
-            //           child: Text(value),
-            //         );
-            //       }).toList(),
-            // ),
-            // const SizedBox(height: 16),
-
+          //  TextButton(
+          //      onPressed: () {
+          //     setState(() {
+          //     selectedDate = null;
+          //     selectedOrganisation = null;
+          //     minPrice = 0.0;
+          //     maxPrice = 50.0;
+          //     selectedCategory = null;
+          //   });
+          // },
+          // child: const Text('Clear Filters'),
+          // ),
             // Organisation Dropdown
             const Text('Organisation'),
             DropdownButton<String>(
-              value: selectedOrganisation,
+             value: organisations.contains(selectedOrganisation)
+                ? selectedOrganisation
+                : null,
               hint: const Text('Select Organisation'),
               onChanged: (String? newValue) {
                 setState(() {
@@ -170,3 +163,9 @@ class FilterPageState extends State<FilterPage> {
     }
   }
 }
+
+// Future<List<String>> fetchOrganisations() async {
+//   // Fetch organisations from Firestore or another source
+//   final querySnapshot = await FirebaseFirestore.instance.collection('organisations').get();
+//   return querySnapshot.docs.map((doc) => doc['name'] as String).toList();
+// }

@@ -22,9 +22,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   bool isOrganisation = false;
 
   DateTime? _selectedDate;
@@ -71,6 +71,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty ||
+        _usernameController.text.isEmpty ||
         _dobController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
@@ -93,6 +94,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _passwordController.text.trim(),
       _selectedDate!,
       isOrganisation,
+      _usernameController.text.trim(),
     );
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,6 +128,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           // key: _formKey,
           child: Column(
             children: [
+              TextFormField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(labelText: "Username"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter a username";
+                    }
+                    if (value.length < 3) {
+                      return "Username must be at least 3 characters";
+                    }
+                    return null;
+                  },
+            ),                
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: "First Name"),

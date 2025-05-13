@@ -73,10 +73,17 @@ class ChatRoom extends StatelessWidget {
   final String eventTitle;
   final String eventId;
   final TextEditingController _messageController = TextEditingController();
+  final String username;
+  final bool isOrganisation;
   // final CollectionReference messages = FirebaseFirestore.instance.collection('messages');
   
 
-  ChatRoom({super.key, required this.eventId, required this.eventTitle});
+  ChatRoom({
+    super.key, 
+    required this.eventId, 
+    required this.eventTitle, 
+    required this.username,
+    required this.isOrganisation,});
 
 
   @override
@@ -91,7 +98,8 @@ class ChatRoom extends StatelessWidget {
     if (_messageController.text.trim().isEmpty) return;
     messages.add({
       'text': _messageController.text.trim(),
-      'sender': FirebaseAuth.instance.currentUser!.email,
+      'sender': username,
+      'isOrganisation': isOrganisation,
       'timestamp': FieldValue.serverTimestamp(),
     });
     _messageController.clear();
@@ -119,10 +127,26 @@ class ChatRoom extends StatelessWidget {
                 return ListView(
                   reverse: true,
                   children: snapshot.data!.docs.map((doc) {
+                    final sender = doc['sender'] ?? 'Unknown Sender';
+                    final text = doc['text'] ?? 'No Text';
+                    final data = doc.data() as Map<String, dynamic>;
+                    final isOrg = data.containsKey('isOrganisation') ? data['isOrganisation'] : false;
                     return ListTile(
-                      title: Text(doc['sender'] ?? 'Unknown Sender'),
-                      subtitle: Text(doc['text'] ?? 'No Text'),
+
+                      title: Text(
+                        sender,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isOrg ? Colors.blue : Colors.green,
+                        ),
+                      ),
+                      trailing: isOrg ? Icon(Icons.business, color: Colors.blue) : Icon(Icons.person, color: Colors.green),
+                      subtitle: Text(
+                        text,
+                      ),
+                      
                     );
+                    
                   }).toList(),
                 );
               },

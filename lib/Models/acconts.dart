@@ -22,6 +22,7 @@ class AccountData {
   final String firstName;
   final String lastName;
   final int phoneNum;
+  final String userName;
   final DateTime dob; // Added dob field
 
   AccountData({
@@ -31,6 +32,7 @@ class AccountData {
     required this.firstName,
     required this.lastName,
     required this.phoneNum,
+    required this.userName,
     required this.dob, // Added dob to constructor
   });
 }
