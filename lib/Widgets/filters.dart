@@ -10,14 +10,13 @@ class FilterPage extends StatefulWidget {
 
 class FilterPageState extends State<FilterPage> {
   DateTime? selectedDate;
-  String? selectedLocation;
   String? selectedOrganisation;
   double minPrice = 0.0;
   double maxPrice = 50.0;
   String? selectedCategory;
 
   // Sample locations and organisations for dropdowns
-  List<String> locations = ['London', 'Birmingham', 'Glasgow', 'Portsmouth'];
+
   List<String> organisations = [
     'Tech Corp',
     'Creative Studio',
@@ -38,7 +37,6 @@ class FilterPageState extends State<FilterPage> {
               // Create a map of the selected filters
               Map<String, dynamic> filters = {
                 'date': selectedDate,
-                'location': selectedLocation,
                 'organisation': selectedOrganisation,
                 'price': {'min': minPrice, 'max': maxPrice},
                 'category': selectedCategory,
@@ -112,25 +110,25 @@ class FilterPageState extends State<FilterPage> {
             ),
             const SizedBox(height: 16),
 
-            // Location Dropdown
-            const Text('Location'),
-            DropdownButton<String>(
-              value: selectedLocation,
-              hint: const Text('Select Location'),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedLocation = newValue;
-                });
-              },
-              items:
-                  locations.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-            ),
-            const SizedBox(height: 16),
+            // // Location Dropdown
+            // const Text('Location'),
+            // DropdownButton<String>(
+            //   value: selectedLocation,
+            //   hint: const Text('Select Location'),
+            //   onChanged: (String? newValue) {
+            //     setState(() {
+            //       selectedLocation = newValue;
+            //     });
+            //   },
+            // //   items:
+            //       locations.map<DropdownMenuItem<String>>((String value) {
+            //         return DropdownMenuItem<String>(
+            //           value: value,
+            //           child: Text(value),
+            //         );
+            //       }).toList(),
+            // ),
+            // const SizedBox(height: 16),
 
             // Organisation Dropdown
             const Text('Organisation'),

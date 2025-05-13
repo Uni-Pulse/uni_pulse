@@ -71,16 +71,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatRoom extends StatelessWidget {
   final String eventTitle;
+  final String eventId;
   final TextEditingController _messageController = TextEditingController();
   // final CollectionReference messages = FirebaseFirestore.instance.collection('messages');
+  
 
-  ChatRoom({super.key, required this.eventTitle});
+  ChatRoom({super.key, required this.eventId, required this.eventTitle});
 
 
   @override
   Widget build(BuildContext context) {
 
-      final CollectionReference messages = FirebaseFirestore.instance.collection('events').doc(eventTitle).collection('messages');
+      final CollectionReference messages = FirebaseFirestore.instance
+      .collection('events')
+      .doc(eventId)
+      .collection('messages');
 
      void sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
@@ -115,8 +120,8 @@ class ChatRoom extends StatelessWidget {
                   reverse: true,
                   children: snapshot.data!.docs.map((doc) {
                     return ListTile(
-                      title: Text(doc['sender']),
-                      subtitle: Text(doc['text']),
+                      title: Text(doc['sender'] ?? 'Unknown Sender'),
+                      subtitle: Text(doc['text'] ?? 'No Text'),
                     );
                   }).toList(),
                 );
