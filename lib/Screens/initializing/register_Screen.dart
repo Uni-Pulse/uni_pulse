@@ -11,6 +11,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
@@ -23,41 +25,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   DateTime? _selectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = (await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
-    ))!;
-    if (picked != _selectedDate) {
+    );
+    if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _dobController.text = "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+        _dobController.text = "${picked.day}/${picked.month}/${picked.year}";
       });
     }
   }
 
   void _saveAccount() async {
-    if (_firstNameController.text.isEmpty ||
-        _lastNameController.text.isEmpty ||
-        _phoneNumberController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty ||
-        _usernameController.text.isEmpty ||
-        _dobController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     final String? errorMessage = await ref.read(accountsProvider.notifier).registerUser(
       _firstNameController.text.trim(),
@@ -69,146 +52,126 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       isOrganisation,
       _usernameController.text.trim(),
     );
+
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration failed: $errorMessage")),
       );
-      return;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Registration Successful!")),
       );
-      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const AuthScreen()));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const AuthScreen()));
     }
+  }
+
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text("Register"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(title: const Text("Register")),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Form(
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: "Username"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter a username";
-                  }
-                  if (value.length < 3) {
-                    return "Username must be at least 3 characters";
-                  }
-                  return null;
-                },
+                decoration: _buildInputDecoration("Username"),
+                validator: (value) => value == null || value.isEmpty || value.length < 3
+                    ? "Username must be at least 3 characters"
+                    : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _firstNameController,
-                decoration: const InputDecoration(labelText: "First Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your first name";
-                  }
-                  return null;
-                },
+                decoration: _buildInputDecoration("First Name"),
+                validator: (value) => value == null || value.isEmpty ? "Please enter your first name" : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _lastNameController,
-                decoration: const InputDecoration(labelText: "Last Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your last name";
-                  }
-                  return null;
-                },
+                decoration: _buildInputDecoration("Last Name"),
+                validator: (value) => value == null || value.isEmpty ? "Please enter your last name" : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _phoneNumberController,
-                decoration: const InputDecoration(labelText: "Phone Number"),
+                decoration: _buildInputDecoration("Phone Number"),
                 keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your phone number";
-                  }
-                  if (!RegExp(r'^\+?\d{10,13}$').hasMatch(value)) {
-                    return "Please enter a valid phone number";
-                  }
-                  return null;
-                },
+                validator: (value) => value == null || !RegExp(r'^\+?\d{10,13}$').hasMatch(value)
+                    ? "Please enter a valid phone number"
+                    : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
+                decoration: _buildInputDecoration("Email"),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter an email";
-                  }
-                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return "Please enter a valid email";
-                  }
-                  return null;
-                },
+                validator: (value) => value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)
+                    ? "Please enter a valid email"
+                    : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: "Password"),
+                decoration: _buildInputDecoration("Password"),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.length < 6) {
-                    return "Password must be at least 6 characters";
-                  }
-                  return null;
-                },
+                validator: (value) => value == null || value.length < 6
+                    ? "Password must be at least 6 characters"
+                    : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration: const InputDecoration(labelText: "Confirm Password"),
+                decoration: _buildInputDecoration("Confirm Password"),
                 obscureText: true,
-                validator: (value) {
-                  if (value != _passwordController.text) {
-                    return "Passwords do not match";
-                  }
-                  return null;
-                },
+                validator: (value) =>
+                    value != _passwordController.text ? "Passwords do not match" : null,
               ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _dobController,
-                decoration: const InputDecoration(labelText: "Date Of Birth"),
+                decoration: _buildInputDecoration("Date of Birth"),
                 readOnly: true,
                 onTap: () => _selectDate(context),
-                validator: (value) {
-                  if (_selectedDate == null) {
-                    return "Please select a date of birth";
-                  }
-                  return null;
-                },
+                validator: (_) =>
+                    _selectedDate == null ? "Please select a date of birth" : null,
               ),
               const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text("Make it an organisation"),
+                  const Spacer(),
                   Switch(
                     value: isOrganisation,
-                    onChanged: (bool value) {
-                      setState(() {
-                        isOrganisation = value;
-                      });
-                    },
+                    onChanged: (val) => setState(() => isOrganisation = val),
                     activeColor: Theme.of(context).colorScheme.primary,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveAccount,
-                child: const Text("Register"),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _saveAccount,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text("Register"),
+                ),
               ),
             ],
           ),
