@@ -132,8 +132,8 @@ final eventsProvider =
 
 
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
-    AccountData(firstName: 'org',lastName: '', email: 'org', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
+  AccountNotifier() : super([AccountData(userName: 'user', firstName: 'user',lastName: '', email: 'user', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
+    AccountData(userName: 'org',firstName: 'org',lastName: '', email: 'org', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -144,6 +144,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     required String email,
     required String phoneNum,
     required bool isOrganisation,
+    required String userName,
   }) async {
     try {
       // Get the current user's ID
@@ -151,6 +152,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
       // Update the user's data in Firestore
       await firestore.collection('users').doc(userId).update({
+        'userName': userName, // Assuming userName is the same as email
         'firstName': firstName,
         'lastName': lastName,
         'email': email,
@@ -161,6 +163,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       // Update the local state for the current user
       if (currentUser != null) {
         currentUser = AccountData(
+          userName: currentUser!.userName, // Keep the existing username
           firstName: firstName,
           lastName: lastName,
           email: email,
@@ -207,8 +210,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final data = userDoc.data()!;
       final loggedInUser = AccountData(
         email: data['email'] as String,
-        // password: data['password'] as String,
-        isOrganisation: data['isOrganisation'] as bool,
+        userName: data['userName'] as String,
+        isOrganisation: data['isOrganisation'] as bool? ?? false,
         firstName: data['firstName'] as String,
         lastName: data['lastName'] as String,
         phoneNum: data['phoneNum'] as int,
@@ -247,7 +250,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     String email, 
     String password, 
     DateTime dob, 
-    bool isOrganisation) async {
+    bool isOrganisation,
+    String userName) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
@@ -265,8 +269,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
         firstName: firstName,
         lastName: lastName,
-        phoneNum: int.parse(phoneNumber), // Assuming phone number is stored as an int
-
+        userName: userName, // Pass the userName parameter here
+        phoneNum: int.parse(phoneNumber),
         email: email,
         // password: password,
         dob: dob,
@@ -282,6 +286,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         'dob': dob.toIso8601String(),
         'isOrganisation': isOrganisation,
         'uid': uid,
+        'userName': userName,
          // Store date as a string in ISO format
       });
 
@@ -315,9 +320,10 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         final data = doc.data();
         debugPrint('Fetched user: $data');
         return AccountData(
+          userName: data['userName'] as String,
           email: data['email'] as String,
           // password: data['password'] as String,
-          isOrganisation: data['isOrganisation'] as bool,
+          isOrganisation: data['isOrganisation'] as bool? ?? false,
           firstName: data['firstName'] as String,
           lastName: data['lastName'] as String,
           phoneNum: data['phoneNum'] as int,
