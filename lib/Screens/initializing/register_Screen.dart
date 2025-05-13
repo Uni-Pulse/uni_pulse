@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
-// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:uni_pulse/Screens/initializing/login.dart';
-
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() {
-    return _RegisterScreenState();
-  }
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  // final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
@@ -26,7 +20,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   bool isOrganisation = false;
-
   DateTime? _selectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
@@ -39,30 +32,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _dobController.text =
-            "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+        _dobController.text = "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
       });
     }
   }
-
-  // Future<void> _registerUser() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     try {
-
-  //       // await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  //       //   email: _emailController.text.trim(),
-  //       //   password: _passwordController.text.trim(),
-  //       // );
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Registration Successful!")),
-  //       );
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("Error: ${e.toString()}")),
-  //       );
-  //     }
-  //   }
-  // }
 
   void _saveAccount() async {
     if (_firstNameController.text.isEmpty ||
@@ -101,19 +74,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         SnackBar(content: Text("Registration failed: $errorMessage")),
       );
       return;
-    }
-    else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Registration Successful!")),
-    );
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => const AuthScreen())); //_registerUser,
-  }
+        const SnackBar(content: Text("Registration Successful!")),
+      );
+      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const AuthScreen()));
     }
-
-    
-
-    
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,22 +92,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          // key: _formKey,
           child: Column(
             children: [
               TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(labelText: "Username"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter a username";
-                    }
-                    if (value.length < 3) {
-                      return "Username must be at least 3 characters";
-                    }
-                    return null;
-                  },
-            ),                
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: "Username"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter a username";
+                  }
+                  if (value.length < 3) {
+                    return "Username must be at least 3 characters";
+                  }
+                  return null;
+                },
+              ),
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: "First Name"),
@@ -202,8 +168,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration:
-                    const InputDecoration(labelText: "Confirm Password"),
+                decoration: const InputDecoration(labelText: "Confirm Password"),
                 obscureText: true,
                 validator: (value) {
                   if (value != _passwordController.text) {
@@ -225,14 +190,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 20),
-              Switch(
-                value: isOrganisation,
-                onChanged: (bool value) {
-                  setState(() {
-                    isOrganisation = value;
-                  });
-                },
-                activeColor: Theme.of(context).colorScheme.primary,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Make it an organisation"),
+                  Switch(
+                    value: isOrganisation,
+                    onChanged: (bool value) {
+                      setState(() {
+                        isOrganisation = value;
+                      });
+                    },
+                    activeColor: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -246,5 +217,3 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 }
-
-// test commit
