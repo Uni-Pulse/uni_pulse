@@ -4,6 +4,7 @@ import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:uni_pulse/Screens/initializing/login.dart';
+import 'package:uni_pulse/Screens/initializing/utils.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -15,6 +16,15 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+
+      Uint8List? _image;
+void selectImage() async{
+  Uint8List img = await pickImage(ImageSource.gallery);
+  setState(() {
+    _image = img;
+  });
+}
+ 
   // final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -224,6 +234,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ElevatedButton(
                 onPressed: _saveAccount,
                 child: const Text("Register"),
+              ),
+              Stack(
+                children: [
+                  _image != null ?
+                       CircleAvatar(
+                          radius: 65,
+                          backgroundImage: MemoryImage(_image!),
+                        )
+                      : const CircleAvatar(
+                          radius: 65,
+                          backgroundImage: NetworkImage(
+                              'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
+                        ),
+                  Positioned(
+                    child: IconButton(
+                      onPressed: selectImage,
+                      icon: const Icon(Icons.add_a_photo),
+                    ),
+                  )
+                ],
               ),
             ],
           ),
