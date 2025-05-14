@@ -1,5 +1,6 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart';
 // import 'package:path_provider/path_provider.dart' as syspaths;
 // import 'package:path/path.dart' as path;
 import 'package:uni_pulse/Models/acconts.dart';
@@ -132,11 +133,24 @@ final eventsProvider =
 
 
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12)),
-    AccountData(firstName: 'org',lastName: '', email: 'org', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12)),]);
+  AccountNotifier() : super([AccountData(firstName: 'user',lastName: '', email: 'user', isOrganisation: false, phoneNum: 54321, dob: DateTime(2005,05,12), favouriteEvents: []),
+    AccountData(firstName: 'org',lastName: '', email: 'org', isOrganisation: true, phoneNum: 54321, dob: DateTime(2005,05,12), favouriteEvents: []),]);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
+
+  Future<void> addFavouriteEvent(EventData event) async{
+    if (state == null) return;
+    try{
+
+      await firestore.collection('users').doc(currentUser!.email).update({
+        'favouriteEvents': currentUser!.favouriteEvents.map((e) => e.toMap()).toList(),
+      });
+    }catch (e) {
+      debugPrint('Error adding event to favourites: $e');
+    }
+  
+  }
 
   Future<void> updateUser({
     required String firstName,
@@ -144,6 +158,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     required String email,
     required String phoneNum,
     required bool isOrganisation,
+  
   }) async {
     try {
       // Get the current user's ID
@@ -166,7 +181,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           email: email,
           phoneNum: int.parse(phoneNum),
           isOrganisation: isOrganisation,
-          dob: currentUser!.dob, // Keep the existing DOB
+          dob: currentUser!.dob,
+          favouriteEvents: currentUser!.favouriteEvents // Keep the existing DOB
         );
       }
       
@@ -212,7 +228,10 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         firstName: data['firstName'] as String,
         lastName: data['lastName'] as String,
         phoneNum: data['phoneNum'] as int,
-        dob: DateTime.parse(data['dob'] as String),
+        dob: DateTime.parse(data['dob'] as String,
+        // Assuming favouriteEvents is a list of EventData
+        ),
+         favouriteEvents: data['favouriteEvents'] as List<EventData>
       );
 
       currentUser = loggedInUser;
@@ -271,6 +290,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         // password: password,
         dob: dob,
         isOrganisation: isOrganisation,
+        favouriteEvents: [], // Initialize with an empty list
       );
 
       // Save the account to Firestore
@@ -321,7 +341,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           firstName: data['firstName'] as String,
           lastName: data['lastName'] as String,
           phoneNum: data['phoneNum'] as int,
-          dob: DateTime.parse(data['dob'] as String), // Assuming dob is stored as a string in ISO format
+          dob: DateTime.parse(data['dob'] as String,
+          ), // Assuming dob is stored as a string in ISO format
+          favouriteEvents: [], // Initialize with an empty list or fetch actual data if available
         );
       }).toList();
 
