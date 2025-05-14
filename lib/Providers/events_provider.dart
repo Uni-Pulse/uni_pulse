@@ -210,7 +210,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final data = userDoc.data()!;
       final loggedInUser = AccountData(
         email: data['email'] as String,
-        userName: data['userName'] as String,
+        userName: data['username'] as String,
         isOrganisation: data['isOrganisation'] as bool? ?? false,
         firstName: data['firstName'] as String,
         lastName: data['lastName'] as String,
@@ -221,9 +221,26 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       currentUser = loggedInUser;
       return loggedInUser; // Return the logged-in user's details
     } else {
-      debugPrint('No user details documents found in Firsetore for UID: $uid');
+    // Try organisations collection
+    final orgDoc = await firestore.collection('organisations').doc(uid).get();
+    if (orgDoc.exists && orgDoc.data() != null) {
+      final data = orgDoc.data()!;
+      final loggedInOrg = AccountData(
+        email: data['email'] as String,
+        userName: data['username'] as String,
+        isOrganisation: true,
+        firstName: data['orgName'] as String,
+        lastName: '',
+        phoneNum: data['phoneNumber'] as int,
+        dob: null,
+      );
+      currentUser = loggedInOrg;
+      return loggedInOrg;}
+      else {
+      debugPrint('No user or organisation details found in Firestore for UID: $uid');
       return null;
     }
+}
   } on FirebaseAuthException catch (e) {
     if (e.code == 'user-not-found') {
       debugPrint('No user found for that email.');
@@ -286,7 +303,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         'dob': dob.toIso8601String(),
         'isOrganisation': isOrganisation,
         'uid': uid,
-        'userName': userName,
+        'username': userName,
          // Store date as a string in ISO format
       });
 
@@ -312,6 +329,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     }
   }
 
+
     // Fetch all user accounts from Firestore
   Future<void> fetchUsers() async {
     try {
@@ -320,20 +338,82 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         final data = doc.data();
         debugPrint('Fetched user: $data');
         return AccountData(
-          userName: data['userName'] as String,
-          email: data['email'] as String,
+          userName: data['username'] as String? ?? '', // Assuming username is stored in Firestore
+          email: data['email'] as String? ?? '',
           // password: data['password'] as String,
           isOrganisation: data['isOrganisation'] as bool? ?? false,
-          firstName: data['firstName'] as String,
-          lastName: data['lastName'] as String,
-          phoneNum: data['phoneNum'] as int,
-          dob: DateTime.parse(data['dob'] as String), // Assuming dob is stored as a string in ISO format
-        );
+          firstName: data['firstName'] as String? ?? '',
+          lastName: data['lastName'] as String? ?? '',
+          phoneNum: data['phoneNum'] as int? ?? 0,
+          dob: data['dob'] != null ? DateTime.tryParse(data['dob']) : null,);
       }).toList();
 
       state = users;
     } catch (e) {
       debugPrint('Error fetching users: $e');
+    }
+  }
+
+  Future<String?> registerOrganisation({
+  required String orgName,
+  required String email,
+  required String password,
+  required String phoneNumber,
+  required String userName,
+}) async {
+  try {
+    // Create a new user in Firebase Authentication
+    final UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Save the organisation data to Firestore
+    await firestore.collection('organisations').doc(userCredential.user!.uid).set({
+      'orgName': orgName,
+      'username': userName,
+      'email': email,
+      'phoneNumber': int.parse(phoneNumber),
+      'isOrganisation': true,
+      'createdAt': FieldValue.serverTimestamp(),
+      // Add more organisation-specific fields here if needed
+    });
+
+    return null; // Success, no error
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'email-already-in-use') {
+      return 'The email address is already in use.';
+    } else if (e.code == 'weak-password') {
+      return 'The password is too weak.';
+    } else {
+      return e.message;
+    }
+  } catch (e) {
+    return 'An unexpected error occurred: $e';
+  }
+}
+
+  // Fetch all organisations from Firestore
+  Future<List<AccountData>> fetchOrganisations() async {
+    try {
+      final querySnapshot = await firestore.collection('organisations').get();
+      final organisations = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return AccountData(
+          userName: data['username'] as String,
+          email: data['email'] as String,
+          isOrganisation: true,
+          firstName: data['orgName'] as String,
+          lastName: '', // Assuming no last name for organisations
+          phoneNum: data['phoneNumber'] as int,
+          dob:  null, // Assuming no DOB for organisations
+        );
+      }).toList();
+
+      return organisations;
+    } catch (e) {
+      debugPrint('Error fetching organisations: $e');
+      return [];
     }
   }
 }

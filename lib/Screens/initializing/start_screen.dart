@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'package:uni_pulse/Screens/initializing/register_screen.dart';
- 
+import 'package:uni_pulse/Screens/organizations/org_register.dart'; // Make sure this path is correct
+
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
 
@@ -38,12 +39,9 @@ class StartScreen extends StatelessWidget {
               // Title & Subtitle
               Column(
                 children: const [
+                  
                   Text(
-                    "Title",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "unipulse",
+                    "UNI Pulse",
                     style: TextStyle(fontSize: 18, color: Colors.black54),
                   ),
                 ],
@@ -63,7 +61,29 @@ class StartScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () { Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const RegisterScreen() ));},
-                      child: const Text("Register"),
+                      child: const Text("Register-Individual"),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  // Register Organisation Button
+                  SizedBox(
+                    width: 180,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A0DAD),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RegisterOrganisationScreen()),
+                        );
+                      },
+                      child: const Text("Register Organisation"),
                     ),
                   ),
                   const SizedBox(height: 15),
