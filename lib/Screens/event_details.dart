@@ -11,7 +11,6 @@ class EventDetailsScreen extends StatelessWidget {
   // add a constructipor to show deleye button for only the event owner
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(title: Text('Event Details')),
@@ -26,13 +25,12 @@ class EventDetailsScreen extends StatelessWidget {
             Text(
               event.description,
               style: const TextStyle(fontSize: 16),
-            ),   //Event description might needs saving in the database
+            ), //Event description might needs saving in the database
             const SizedBox(height: 10),
             Text(
               'Date: ${event.date}',
               style: const TextStyle(fontSize: 16),
             ),
-
 
             const SizedBox(height: 10),
             Text(
@@ -50,39 +48,47 @@ class EventDetailsScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
-            
 
             ElevatedButton(
-              onPressed: () async{
+              onPressed: () async {
                 final currentUser = FirebaseAuth.instance.currentUser;
 
                 if (currentUser != null) {
-              // Fetch additional user details from Firestore
+                  // Fetch additional user details from Firestore
                   final userDoc = await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(currentUser.uid)
-                    .get();
+                      .collection('users')
+                      .doc(currentUser.uid)
+                      .get();
 
                   String username;
                   bool isOrganisation;
 
                   if (userDoc.exists && userDoc.data() != null) {
-                   final userData = userDoc.data()!;
-                   username = (userData['username'] as String?) ?? 'Unknown User';
-                   isOrganisation = (userData['isOrganisation'] as bool?) ?? false;
-                  }else{
-                    debugPrint('Firestore document for user ${currentUser.uid} not found');
+                    final userData = userDoc.data()!;
+                    username =
+                        (userData['username'] as String?) ?? 'Unknown User';
+                    isOrganisation =
+                        (userData['isOrganisation'] as bool?) ?? false;
+                  } else {
+                    debugPrint(
+                        'Firestore document for user ${currentUser.uid} not found');
                     username = 'Unknown User';
                     isOrganisation = false;
                   }
 
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatRoom(
-                eventTitle: event.eventName, 
-                eventId: event.eventId, 
-                username: username, // Replace with the actual username
-                isOrganisation: isOrganisation, // Replace with the actual value
-              ),),);
-                }else{
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatRoom(
+                        eventTitle: event.eventName,
+                        eventId: event.eventId,
+                        username: username, // Replace with the actual username
+                        isOrganisation:
+                            isOrganisation, // Replace with the actual value
+                      ),
+                    ),
+                  );
+                } else {
                   debugPrint('No user is currently logged in.');
                 }
               },
@@ -93,8 +99,6 @@ class EventDetailsScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
-
                 // Text([type.name, ':', Icons.cabin_outlined].toString()),
               ],
             ),
@@ -102,13 +106,9 @@ class EventDetailsScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                
                 // Text([type.name, ':', Icons.cabin_outlined].toString()),
               ],
             ),
-         
-
-            
           ],
         ));
   }

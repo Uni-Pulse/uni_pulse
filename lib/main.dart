@@ -4,23 +4,22 @@ import 'package:uni_pulse/Screens/initializing/start_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 
-
 final colorSchemeLight = ColorScheme.fromSwatch(
   primarySwatch: Colors.deepPurple,
-  backgroundColor: const Color.fromARGB(255, 159, 145, 192), // slightly purple-tinted background
+  backgroundColor: const Color.fromARGB(
+      255, 159, 145, 192), // slightly purple-tinted background
   accentColor: Colors.deepPurpleAccent,
   cardColor: const Color.fromARGB(255, 204, 162, 229),
   errorColor: Colors.red,
 ).copyWith(
-  surface: const Color.fromARGB(255, 220, 199, 254), // override surface color here
+  surface:
+      const Color.fromARGB(255, 220, 199, 254), // override surface color here
 );
 
 final colorSchemeDark = ColorScheme.fromSeed(
   seedColor: const Color.fromARGB(255, 63, 5, 238),
   brightness: Brightness.dark,
 );
-
-
 
 final lightTheme = ThemeData(
   colorScheme: colorSchemeLight,
@@ -62,7 +61,7 @@ final darkTheme = ThemeData(
     foregroundColor: colorSchemeDark.onSurface,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: colorSchemeLight.primary, 
+    backgroundColor: colorSchemeLight.primary,
     selectedItemColor: colorSchemeDark.primary,
     unselectedItemColor: colorSchemeDark.onSurface,
   ),
@@ -86,36 +85,34 @@ final darkTheme = ThemeData(
 
 // final lightTheme = ThemeData().copyWith(colorScheme: colorScheme,);
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try{
-  await Firebase.initializeApp(
-    options:const FirebaseOptions(
-  apiKey: "AIzaSyBHvPpaJ90VcO7airwkpx84hmj6GrXNtXI",
-  authDomain: "unipulse-2c41a.firebaseapp.com",
-  projectId: "unipulse-2c41a",
-  storageBucket: "unipulse-2c41a.firebasestorage.app",
-  messagingSenderId: "922789382300",
-  appId: "1:922789382300:web:390b709a317241a9b78559",
-  measurementId: "G-RHZ5MRV9CF"
-    )
-  ); } catch (e) {debugPrint ('Error initializing $e');} 
+  try {
+    await Firebase.initializeApp(
+        options: const FirebaseOptions(
+            apiKey: "AIzaSyBHvPpaJ90VcO7airwkpx84hmj6GrXNtXI",
+            authDomain: "unipulse-2c41a.firebaseapp.com",
+            projectId: "unipulse-2c41a",
+            storageBucket: "unipulse-2c41a.firebasestorage.app",
+            messagingSenderId: "922789382300",
+            appId: "1:922789382300:web:390b709a317241a9b78559",
+            measurementId: "G-RHZ5MRV9CF"));
+  } catch (e) {
+    debugPrint('Error initializing $e');
+  }
 
-  runApp(const ProviderScope(child:MyApp()));
-
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-@override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-       debugShowCheckedModeBanner: false, // 👈 This hides the DEBUG banner
+      debugShowCheckedModeBanner: false, // 👈 This hides the DEBUG banner
       home: const SplashScreen(),
-      theme : lightTheme,
+      theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system, // Use system theme mode
     );
@@ -146,8 +143,6 @@ class SplashScreen extends ConsumerWidget {
     await ref.read(eventsProvider.notifier).fetchEvents();
   }
 }
-
-
 
 // class MyApp extends StatelessWidget {
 //   const MyApp({super.key});

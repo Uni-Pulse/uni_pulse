@@ -7,14 +7,17 @@ class RegisterOrganisationScreen extends ConsumerStatefulWidget {
   const RegisterOrganisationScreen({super.key});
 
   @override
-  ConsumerState<RegisterOrganisationScreen> createState() => _RegisterOrganisationScreenState();
+  ConsumerState<RegisterOrganisationScreen> createState() =>
+      _RegisterOrganisationScreenState();
 }
 
-class _RegisterOrganisationScreenState extends ConsumerState<RegisterOrganisationScreen> {
+class _RegisterOrganisationScreenState
+    extends ConsumerState<RegisterOrganisationScreen> {
   final TextEditingController _orgNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -42,13 +45,14 @@ class _RegisterOrganisationScreenState extends ConsumerState<RegisterOrganisatio
     if (!_formKey.currentState!.validate()) return;
 
     // Call a provider method for registering an organisation
-    final String? errorMessage = await ref.read(accountsProvider.notifier).registerOrganisation(
-      orgName: _orgNameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-      phoneNumber: _phoneNumberController.text.trim(),
-      userName: _usernameController.text.trim(),
-    );
+    final String? errorMessage =
+        await ref.read(accountsProvider.notifier).registerOrganisation(
+              orgName: _orgNameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+              phoneNumber: _phoneNumberController.text.trim(),
+              userName: _usernameController.text.trim(),
+            );
 
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,7 +84,8 @@ class _RegisterOrganisationScreenState extends ConsumerState<RegisterOrganisatio
             children: [
               TextFormField(
                 controller: _orgNameController,
-                decoration: const InputDecoration(labelText: "Organisation Name"),
+                decoration:
+                    const InputDecoration(labelText: "Organisation Name"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter the organisation name";
@@ -142,7 +147,8 @@ class _RegisterOrganisationScreenState extends ConsumerState<RegisterOrganisatio
               ),
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration: const InputDecoration(labelText: "Confirm Password"),
+                decoration:
+                    const InputDecoration(labelText: "Confirm Password"),
                 obscureText: true,
                 validator: (value) {
                   if (value != _passwordController.text) {
