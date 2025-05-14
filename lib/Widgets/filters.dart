@@ -34,18 +34,18 @@ class FilterPageState extends State<FilterPage> {
           // Apply Button to pass the filters back
           IconButton(
             icon: const Icon(Icons.check),
-        onPressed: () async {
-          // Create a map of the selected filters
-          Map<String, dynamic> filters = {
-            'date': selectedDate,
-            'organisation': selectedOrganisation,
-            'price': {'min': minPrice, 'max': maxPrice},
-            'category': selectedCategory,
-          };
-          debugPrint('Apllied filters: $filters');
-          // Return the filters back to the ListEvents page
-          Navigator.pop(context, filters);
-        },
+            onPressed: () async {
+              // Create a map of the selected filters
+              Map<String, dynamic> filters = {
+                'date': selectedDate,
+                'organisation': selectedOrganisation,
+                'price': {'min': minPrice, 'max': maxPrice},
+                'category': selectedCategory,
+              };
+              debugPrint('Apllied filters: $filters');
+              // Return the filters back to the ListEvents page
+              Navigator.pop(context, filters);
+            },
           ),
         ],
       ),
@@ -57,9 +57,11 @@ class FilterPageState extends State<FilterPage> {
             // Category Dropdown
             const Text('Category'),
             DropdownButton<String>(
-              value: EventType.values.map((e) => e.toString().split('.').last).contains(selectedCategory)
-                ? selectedCategory
-                : null,
+              value: EventType.values
+                      .map((e) => e.toString().split('.').last)
+                      .contains(selectedCategory)
+                  ? selectedCategory
+                  : null,
               hint: const Text('Select Category'),
               onChanged: (String? newValue) {
                 setState(() {
@@ -67,13 +69,13 @@ class FilterPageState extends State<FilterPage> {
                   debugPrint('Selected Category: $selectedCategory');
                 });
               },
-              items:
-                  EventType.values.map<DropdownMenuItem<String>>((EventType value) {
-                    return DropdownMenuItem<String>(
-                      value: value.toString().split('.').last,
-                      child: Text(value.toString().split('.').last),
-                    );
-                  }).toList(),
+              items: EventType.values
+                  .map<DropdownMenuItem<String>>((EventType value) {
+                return DropdownMenuItem<String>(
+                  value: value.toString().split('.').last,
+                  child: Text(value.toString().split('.').last),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 16),
 
@@ -110,24 +112,24 @@ class FilterPageState extends State<FilterPage> {
             ),
             const SizedBox(height: 16),
 
-          //  TextButton(
-          //      onPressed: () {
-          //     setState(() {
-          //     selectedDate = null;
-          //     selectedOrganisation = null;
-          //     minPrice = 0.0;
-          //     maxPrice = 50.0;
-          //     selectedCategory = null;
-          //   });
-          // },
-          // child: const Text('Clear Filters'),
-          // ),
+            //  TextButton(
+            //      onPressed: () {
+            //     setState(() {
+            //     selectedDate = null;
+            //     selectedOrganisation = null;
+            //     minPrice = 0.0;
+            //     maxPrice = 50.0;
+            //     selectedCategory = null;
+            //   });
+            // },
+            // child: const Text('Clear Filters'),
+            // ),
             // Organisation Dropdown
             const Text('Organisation'),
             DropdownButton<String>(
-             value: organisations.contains(selectedOrganisation)
-                ? selectedOrganisation
-                : null,
+              value: organisations.contains(selectedOrganisation)
+                  ? selectedOrganisation
+                  : null,
               hint: const Text('Select Organisation'),
               onChanged: (String? newValue) {
                 setState(() {
@@ -136,11 +138,11 @@ class FilterPageState extends State<FilterPage> {
               },
               items:
                   organisations.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
             ),
           ],
         ),

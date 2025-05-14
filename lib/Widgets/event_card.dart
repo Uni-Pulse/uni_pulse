@@ -33,7 +33,8 @@ class EventCard extends StatelessWidget {
         children: [
           Text(eventname, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 5),
-          Text(formatter.format(date), style: Theme.of(context).textTheme.bodySmall),
+          Text(formatter.format(date),
+              style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           Text('Ticket Price: \$${ticketPrice.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.bodySmall),

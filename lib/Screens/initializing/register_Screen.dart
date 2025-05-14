@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:uni_pulse/Screens/initializing/login.dart';
 
-
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -22,7 +21,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   bool isOrganisation = false;
@@ -86,34 +86,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    final String? errorMessage = await ref.read(accountsProvider.notifier).registerUser(
-      _firstNameController.text.trim(),
-      _lastNameController.text.trim(),
-      _phoneNumberController.text.trim(),
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-      _selectedDate!,
-      isOrganisation,
-      _usernameController.text.trim(),
-    );
+    final String? errorMessage =
+        await ref.read(accountsProvider.notifier).registerUser(
+              _firstNameController.text.trim(),
+              _lastNameController.text.trim(),
+              _phoneNumberController.text.trim(),
+              _emailController.text.trim(),
+              _passwordController.text.trim(),
+              _selectedDate!,
+              isOrganisation,
+              _usernameController.text.trim(),
+            );
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration failed: $errorMessage")),
       );
       return;
-    }
-    else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Registration Successful!")),
-    );
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => const AuthScreen())); //_registerUser,
-  }
+        const SnackBar(content: Text("Registration Successful!")),
+      );
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) => const AuthScreen())); //_registerUser,
     }
-
-    
-
-    
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,18 +125,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: Column(
             children: [
               TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(labelText: "Username"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter a username";
-                    }
-                    if (value.length < 3) {
-                      return "Username must be at least 3 characters";
-                    }
-                    return null;
-                  },
-            ),                
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: "Username"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter a username";
+                  }
+                  if (value.length < 3) {
+                    return "Username must be at least 3 characters";
+                  }
+                  return null;
+                },
+              ),
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: "First Name"),
@@ -224,7 +220,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
-              
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveAccount,

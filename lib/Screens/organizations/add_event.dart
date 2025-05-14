@@ -1,13 +1,11 @@
-import 'dart:io';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Models/events.dart';
-import 'package:flutter/services.dart';// used to only allow numeric inputs in the ticket price
+import 'package:flutter/services.dart'; // used to only allow numeric inputs in the ticket price
 
 import 'package:uni_pulse/Providers/events_provider.dart';
-import 'package:uni_pulse/Widgets/image_controller.dart';
 
 final formatter = DateFormat.yMd();
 
@@ -35,46 +33,44 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
     super.initState();
     _currentUser = ref.read(accountsProvider.notifier).currentUser;
     if (_currentUser == null) {
-    // Handle the case where the user is not logged in
-    debugPrint('Error: No user is currently logged in.');
-    _organisationName = 'Unknown Organisation'; // Fallback value
-  } else {
-    _organisationName = _currentUser.firstName;
-  }
-  }
-
-
-void _eventSave() {
-  if (_titleController.text.isEmpty ||
-      _selectedDate == null ||
-      _ticketPriceController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please fill in all required fields.')),
-    );
-    return;
+      // Handle the case where the user is not logged in
+      debugPrint('Error: No user is currently logged in.');
+      _organisationName = 'Unknown Organisation'; // Fallback value
+    } else {
+      _organisationName = _currentUser.firstName;
+    }
   }
 
-  debugPrint('Saving event...');
-  debugPrint('Title: ${_titleController.text}');
-  debugPrint('Organisation: $_organisationName');
-  debugPrint('Date: $_selectedDate');
-  debugPrint('Ticket Price: ${_ticketPriceController.text}');
-  debugPrint('Event Type: $_eventType');
-  debugPrint('Description: ${_descriptionController.text}');
-  debugPrint('Current User Email: ${_currentUser?.email}');
-
-
-  ref.read(eventsProvider.notifier).addEvent(
-        _titleController.text,
-        _organisationName,
-        _selectedDate!,
-        _ticketPriceController.text,
-        _eventType,
-        _descriptionController.text,
+  void _eventSave() {
+    if (_titleController.text.isEmpty ||
+        _selectedDate == null ||
+        _ticketPriceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields.')),
       );
+      return;
+    }
 
-  Navigator.of(context).pop(); // Close the screen after saving
-}
+    debugPrint('Saving event...');
+    debugPrint('Title: ${_titleController.text}');
+    debugPrint('Organisation: $_organisationName');
+    debugPrint('Date: $_selectedDate');
+    debugPrint('Ticket Price: ${_ticketPriceController.text}');
+    debugPrint('Event Type: $_eventType');
+    debugPrint('Description: ${_descriptionController.text}');
+    debugPrint('Current User Email: ${_currentUser?.email}');
+
+    ref.read(eventsProvider.notifier).addEvent(
+          _titleController.text,
+          _organisationName,
+          _selectedDate!,
+          _ticketPriceController.text,
+          _eventType,
+          _descriptionController.text,
+        );
+
+    Navigator.of(context).pop(); // Close the screen after saving
+  }
 
   _eventdatepicker() async {
     final now = DateTime.now();
@@ -94,7 +90,8 @@ void _eventSave() {
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title:  Text('Add a new Event',style: Theme.of(context).textTheme.bodyLarge),
+          title: Text('Add a new Event',
+              style: Theme.of(context).textTheme.bodyLarge),
         ),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(10),
@@ -103,7 +100,9 @@ void _eventSave() {
                 TextField(
                   controller: _titleController,
                   maxLength: 50,
-                  decoration: InputDecoration(label: Text('Event Title', style: Theme.of(context).textTheme.bodySmall)),
+                  decoration: InputDecoration(
+                      label: Text('Event Title',
+                          style: Theme.of(context).textTheme.bodySmall)),
                 ),
                 SizedBox(
                   height: 100,
@@ -111,7 +110,8 @@ void _eventSave() {
                     controller: _descriptionController,
                     maxLength: 500,
                     decoration: InputDecoration(
-                        label: Text('Event Description', style: Theme.of(context).textTheme.bodySmall),
+                        label: Text('Event Description',
+                            style: Theme.of(context).textTheme.bodySmall),
                         hintText: 'Description',
                         border: OutlineInputBorder()),
                   ),
@@ -151,7 +151,8 @@ void _eventSave() {
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
-                        decoration: const InputDecoration(labelText: 'Ticket Price'),
+                        decoration:
+                            const InputDecoration(labelText: 'Ticket Price'),
                       ),
                     ),
                   ],
@@ -159,7 +160,8 @@ void _eventSave() {
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: _eventSave,
-                  label: Text('Add Event', style: Theme.of(context).textTheme.bodyLarge),
+                  label: Text('Add Event',
+                      style: Theme.of(context).textTheme.bodyLarge),
                   icon: const Icon(Icons.add),
                 )
               ],
