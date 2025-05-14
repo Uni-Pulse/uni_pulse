@@ -224,16 +224,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
-              Switch(
-                value: isOrganisation,
-                onChanged: (bool value) {
-                  setState(() {
-                    isOrganisation = value;
-                  });
-                },
-                activeColor: Theme.of(context).colorScheme.primary,
-              ),
+              
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveAccount,
