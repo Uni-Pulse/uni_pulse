@@ -23,7 +23,7 @@ class AccountData {
   final String lastName;
   final int phoneNum;
   final String userName;
-  final DateTime dob; // Added dob field
+  final DateTime? dob; // Added dob field
 
   AccountData({
     required this.email,

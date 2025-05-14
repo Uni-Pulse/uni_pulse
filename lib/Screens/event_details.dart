@@ -68,7 +68,7 @@ class EventDetailsScreen extends StatelessWidget {
 
                   if (userDoc.exists && userDoc.data() != null) {
                    final userData = userDoc.data()!;
-                   username = (userData['userName'] as String?) ?? 'Unknown User';
+                   username = (userData['username'] as String?) ?? 'Unknown User';
                    isOrganisation = (userData['isOrganisation'] as bool?) ?? false;
                   }else{
                     debugPrint('Firestore document for user ${currentUser.uid} not found');
