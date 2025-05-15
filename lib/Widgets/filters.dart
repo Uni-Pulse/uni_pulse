@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Screens/organizations/add_event.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+Future<List<String>> fetchOrganisations() async {
+  final querySnapshot = await FirebaseFirestore.instance.collection('organisations').get();
+  return querySnapshot.docs.map((doc) => doc['orgName'] as String).toList();
+}
 
 class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
@@ -18,12 +24,32 @@ class FilterPageState extends State<FilterPage> {
 
   // Sample locations and organisations for dropdowns
 
-  List<String> organisations = [
-    'Tech Corp',
-    'Creative Studio',
-    'Health Group',
-    'Education Ltd',
-  ];
+  List<String> organisations = [];
+  bool isLoadingOrgs = false;
+
+  @override
+  void initState(){
+    super.initState();
+    _loadOrganisations();
+  }
+
+  Future<void> _loadOrganisations() async {
+    setState(() {
+      isLoadingOrgs = true;
+    });
+    try {
+      final orgs = await fetchOrganisations();
+      setState(() {
+        organisations = orgs;
+      });
+    } catch (e) {
+      debugPrint('Failed to fetch organisations: $e');
+    } finally {
+      setState(() {
+        isLoadingOrgs = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +152,16 @@ class FilterPageState extends State<FilterPage> {
             // ),
             // Organisation Dropdown
             const Text('Organisation'),
-            DropdownButton<String>(
+            IconButton(
+              onPressed: isLoadingOrgs 
+              ? null 
+              : _loadOrganisations, 
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh Organisations',
+            ),
+            isLoadingOrgs
+                ? const CircularProgressIndicator()
+                : DropdownButton<String>(
               value: organisations.contains(selectedOrganisation)
                   ? selectedOrganisation
                   : null,
@@ -167,8 +202,4 @@ class FilterPageState extends State<FilterPage> {
   }
 }
 
-// Future<List<String>> fetchOrganisations() async {
-//   // Fetch organisations from Firestore or another source
-//   final querySnapshot = await FirebaseFirestore.instance.collection('organisations').get();
-//   return querySnapshot.docs.map((doc) => doc['name'] as String).toList();
-// }
+
