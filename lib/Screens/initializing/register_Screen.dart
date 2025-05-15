@@ -6,6 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'package:uni_pulse/Screens/initializing/utils.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 ///Registration is the UI for new user registration
 ///Users must fill out their personal information to tegister a new account
@@ -26,6 +29,21 @@ void selectImage() async{
   setState(() {
     _image = img;
   });
+}
+
+
+Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
+  try {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('profile_images')
+        .child('$uid.jpg');
+    await ref.putData(image);
+    return await ref.getDownloadURL();
+  } catch (e) {
+    debugPrint('Image upload error: $e');
+    return null;
+  }
 }
  
   // final _formKey = GlobalKey<FormState>();
@@ -101,7 +119,7 @@ void selectImage() async{
       );
       return;
     }
-
+    String? imageUrl;
     // Attempt to register via provider
     final String? errorMessage =
         await ref.read(accountsProvider.notifier).registerUser(
@@ -114,20 +132,34 @@ void selectImage() async{
               isOrganisation,
               _usernameController.text.trim(),
             );
-    // Show result to the user
+  
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration failed: $errorMessage")),
       );
       return;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Registration Successful!")),
-      );
-      // Redirect to login screen after successful registration
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => const AuthScreen())); //_registerUser,
     }
+  
+    // If registration is successful and an image is selected, upload the image
+    if (_image != null) {
+      //  need to get the current user's UID after registration.
+      // This assumes you have a way to get the UID, e.g., from FirebaseAuth.
+      // Replace 'currentUserUid' with the actual UID retrieval logic.
+      final currentUserUid = FirebaseAuth.instance.currentUser!.uid;
+      imageUrl = await _uploadProfileImage(_image!, currentUserUid);
+      // Now update Firestore with the imageUrl
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserUid)
+          .update({'profileImageUrl': imageUrl});
+    }
+  
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Registration Successful!")),
+    );
+    // Redirect to login screen after successful registration
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => const AuthScreen()));
   }
 
   /// Builds the registration form UI with all required input fields

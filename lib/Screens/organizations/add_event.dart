@@ -7,6 +7,7 @@ import 'package:flutter/services.dart'; // used to only allow numeric inputs in 
 
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Screens/initializing/utils.dart';
+import 'package:image_picker/image_picker.dart';
 
 
 // Formatter to display dates in MM/DD/YYYY format

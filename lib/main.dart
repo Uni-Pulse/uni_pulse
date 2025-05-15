@@ -33,11 +33,11 @@ final lightTheme = ThemeData(
   useMaterial3: true,
   scaffoldBackgroundColor: colorSchemeLight.surface,
   appBarTheme: AppBarTheme(
-    backgroundColor: colorSchemeLight.primary,
+    backgroundColor: const Color.fromARGB(255, 164, 28, 223),
     foregroundColor: colorSchemeLight.onPrimary,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: colorSchemeLight.primary,
+    backgroundColor: const Color.fromARGB(255, 163, 33, 219),
     selectedItemColor: colorSchemeLight.onPrimary,
     unselectedItemColor: colorSchemeLight.onSurface,
   ),
@@ -57,11 +57,11 @@ final lightTheme = ThemeData(
     ),
   ),
   iconTheme: const IconThemeData(
-    color: Colors.deepPurple, // Set your desired icon color                // Optional: set a default icon size
+    color: Color.fromARGB(255, 187, 149, 254), // Set your desired icon color                // Optional: set a default icon size
   ),
    iconButtonTheme: IconButtonThemeData(
     style: ButtonStyle(
-      iconColor: WidgetStateProperty.all(Colors.deepPurple),
+      iconColor: WidgetStateProperty.all(const Color.fromARGB(255, 194, 160, 253)),
       backgroundColor: WidgetStateProperty.all(Colors.transparent),
       overlayColor: WidgetStateProperty.all(Colors.deepPurple.withOpacity(0.1)),
       shape: WidgetStateProperty.all(
@@ -92,8 +92,8 @@ final lightTheme = ThemeData(
   ),
   fillColor: const Color.fromARGB(255, 192, 184, 184), // or colorScheme.surface for dark mode
   filled: true,
-  prefixIconColor: Colors.deepPurple, 
-  suffixIconColor: Colors.deepPurple, 
+  prefixIconColor: const Color.fromARGB(255, 56, 46, 73), 
+  suffixIconColor: const Color.fromARGB(255, 73, 60, 95), 
 ),
 );
 
