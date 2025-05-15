@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,7 +19,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
-      Uint8List? _image;
+Uint8List? _image;
 void selectImage() async{
   Uint8List img = await pickImage(ImageSource.gallery);
   setState(() {
@@ -132,8 +134,33 @@ void selectImage() async{
         padding: const EdgeInsets.all(16.0),
         child: Form(
           // key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
+              Center(
+                child: Stack(
+                  children: [
+                    _image != null ?
+                         CircleAvatar(
+                            radius: 65,
+                            backgroundImage: MemoryImage(_image!),
+                          )
+                        : const CircleAvatar(
+                            radius: 65,
+                            backgroundImage: NetworkImage(
+                                'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
+                          ),
+                    Positioned(
+                      child: IconButton(
+                        onPressed: selectImage,
+                        icon: const Icon(Icons.add_a_photo),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(labelText: "Username"),
@@ -147,6 +174,9 @@ void selectImage() async{
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: "First Name"),
@@ -157,6 +187,9 @@ void selectImage() async{
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(labelText: "Last Name"),
@@ -166,6 +199,9 @@ void selectImage() async{
                   }
                   return null;
                 },
+              ),
+              SizedBox(
+                height: 20,
               ),
               TextFormField(
                 controller: _phoneNumberController,
@@ -181,6 +217,9 @@ void selectImage() async{
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: "Email"),
@@ -195,6 +234,9 @@ void selectImage() async{
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: "Password"),
@@ -205,6 +247,9 @@ void selectImage() async{
                   }
                   return null;
                 },
+              ),
+              SizedBox(
+                height: 20,
               ),
               TextFormField(
                 controller: _confirmPasswordController,
@@ -218,6 +263,9 @@ void selectImage() async{
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _dobController,
                 decoration: const InputDecoration(labelText: "Date Of Birth"),
@@ -230,31 +278,15 @@ void selectImage() async{
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveAccount,
                 child: const Text("Register"),
               ),
-              Stack(
-                children: [
-                  _image != null ?
-                       CircleAvatar(
-                          radius: 65,
-                          backgroundImage: MemoryImage(_image!),
-                        )
-                      : const CircleAvatar(
-                          radius: 65,
-                          backgroundImage: NetworkImage(
-                              'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
-                        ),
-                  Positioned(
-                    child: IconButton(
-                      onPressed: selectImage,
-                      icon: const Icon(Icons.add_a_photo),
-                    ),
-                  )
-                ],
-              ),
+              
             ],
           ),
         ),
