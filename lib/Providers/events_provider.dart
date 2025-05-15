@@ -316,7 +316,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       String password,
       DateTime dob,
       bool isOrganisation,
-      String userName) async {
+      String userName,
+      List favouritevents) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,

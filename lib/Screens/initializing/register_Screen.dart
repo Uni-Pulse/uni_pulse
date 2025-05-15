@@ -131,6 +131,7 @@ Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
               _selectedDate!,
               isOrganisation,
               _usernameController.text.trim(),
+             [],
             );
   
     if (errorMessage != null) {
