@@ -143,8 +143,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
               email: 'org',
               isOrganisation: true,
               phoneNum: 54321,
-              dob: DateTime(2005, 05, 12)),
-              favouriteEvents: []
+              dob: DateTime(2005, 05, 12), 
+              favouriteEvents: []),
+    
         ]);
 
 
@@ -446,7 +447,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           firstName: data['orgName'] as String,
           lastName: '', // Assuming no last name for organisations
           phoneNum: data['phoneNumber'] as int,
-          dob: null, // Assuming no DOB for organisations
+          dob: null,
+          favouriteEvents: data['favouriteEvents'] // Assuming no DOB for organisations
         );
       }).toList();
 

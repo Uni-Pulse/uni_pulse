@@ -3,9 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfileScreen extends StatefulWidget {
+
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
@@ -14,8 +15,8 @@ class ProfileScreen extends StatefulWidget {
     return _ProfileScreenState();
   }
 
-
-class _ProfileScreenState extends State<ProfileScreen> {
+}
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _lastNameController;
@@ -32,19 +33,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
   List<String> _starredEvents = [];
+  late Future<dynamic> currentUserFuture;
 
   @override
   void initState() {
     super.initState();
 
-    currentUserFuture =
-        Future.value(ref.read(accountsProvider.notifier).currentUser);
+    currentUserFuture = Future.value(ref.read(accountsProvider.notifier).currentUser);
   }
 
-  String _name = '';
-  String _lastname = '';
-  String _email = '';
-  int _phonenum = 0;
+
 
   @override
   Widget build(BuildContext context) {
