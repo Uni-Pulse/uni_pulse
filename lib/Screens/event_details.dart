@@ -1,19 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uni_pulse/Models/events.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Screens/users/chatroom.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class EventDetailsScreen extends StatelessWidget {
+class EventDetailsScreen extends ConsumerWidget {
   const EventDetailsScreen({super.key, required this.event});
 
   final EventData event;
   // add a constructipor to show deleye button for only the event owner
   @override
-  Widget build(BuildContext context) {
+
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(title: Text('Event Details')),
+        appBar: AppBar(title: Text('Event Details'),
+        actions: [
+            IconButton(
+              icon: const Icon(Icons.star_border_outlined),
+              onPressed: () async {
+                try{
+                  await ref.read(accountsProvider.notifier).addFavouriteEvent(event);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Event added to favourites')),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error adding event to favourites')),
+                  );
+                }
+              },
+            
+            ),
+          ],),
         body: Column(
           children: [
             const SizedBox(height: 20),
