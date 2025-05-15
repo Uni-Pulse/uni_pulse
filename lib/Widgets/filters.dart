@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Models/events.dart';
-import 'package:uni_pulse/Screens/organizations/add_event.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uni_pulse/Models/events.dart';
+import 'package:intl/intl.dart';
+
+final DateFormat formatter = DateFormat('yyyy-MM-dd');
 
 Future<List<String>> fetchOrganisations() async {
-  final querySnapshot = await FirebaseFirestore.instance.collection('organisations').get();
+  final querySnapshot =
+      await FirebaseFirestore.instance.collection('organisations').get();
   return querySnapshot.docs.map((doc) => doc['orgName'] as String).toList();
 }
 
@@ -22,13 +25,11 @@ class FilterPageState extends State<FilterPage> {
   double maxPrice = 50.0;
   String? selectedCategory;
 
-  // Sample locations and organisations for dropdowns
-
   List<String> organisations = [];
   bool isLoadingOrgs = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadOrganisations();
   }
@@ -51,141 +52,6 @@ class FilterPageState extends State<FilterPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Filter Events'),
-        actions: [
-          // Apply Button to pass the filters back
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () async {
-              // Create a map of the selected filters
-              Map<String, dynamic> filters = {
-                'date': selectedDate,
-                'organisation': selectedOrganisation,
-                'price': {'min': minPrice, 'max': maxPrice},
-                'category': selectedCategory,
-              };
-              debugPrint('Apllied filters: $filters');
-              // Return the filters back to the ListEvents page
-              Navigator.pop(context, filters);
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Category Dropdown
-            const Text('Category'),
-            DropdownButton<String>(
-              value: EventType.values
-                      .map((e) => e.toString().split('.').last)
-                      .contains(selectedCategory)
-                  ? selectedCategory
-                  : null,
-              hint: const Text('Select Category'),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedCategory = newValue;
-                  debugPrint('Selected Category: $selectedCategory');
-                });
-              },
-              items: EventType.values
-                  .map<DropdownMenuItem<String>>((EventType value) {
-                return DropdownMenuItem<String>(
-                  value: value.toString().split('.').last,
-                  child: Text(value.toString().split('.').last),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-
-            // Price Range Slider
-            const Text('Price Range'),
-            RangeSlider(
-              values: RangeValues(minPrice, maxPrice),
-              min: 0.0,
-              max: 50.0,
-              divisions: 50,
-              labels: RangeLabels(
-                minPrice.round().toString(),
-                maxPrice.round().toString(),
-              ), // Rounds the value to a whole number
-              onChanged: (RangeValues values) {
-                setState(() {
-                  minPrice = values.start;
-                  maxPrice = values.end;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Date Picker
-            const Text('Select Date'),
-            ListTile(
-              title: Text(
-                selectedDate == null
-                    ? 'No date selected'
-                    : formatter.format(selectedDate!),
-              ),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: _selectDate,
-            ),
-            const SizedBox(height: 16),
-
-            //  TextButton(
-            //      onPressed: () {
-            //     setState(() {
-            //     selectedDate = null;
-            //     selectedOrganisation = null;
-            //     minPrice = 0.0;
-            //     maxPrice = 50.0;
-            //     selectedCategory = null;
-            //   });
-            // },
-            // child: const Text('Clear Filters'),
-            // ),
-            // Organisation Dropdown
-            const Text('Organisation'),
-            IconButton(
-              onPressed: isLoadingOrgs 
-              ? null 
-              : _loadOrganisations, 
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Refresh Organisations',
-            ),
-            isLoadingOrgs
-                ? const CircularProgressIndicator()
-                : DropdownButton<String>(
-              value: organisations.contains(selectedOrganisation)
-                  ? selectedOrganisation
-                  : null,
-              hint: const Text('Select Organisation'),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedOrganisation = newValue;
-                });
-              },
-              items:
-                  organisations.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Method to show date picker
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -200,6 +66,138 @@ class FilterPageState extends State<FilterPage> {
       });
     }
   }
-}
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Filter Events'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: () {
+              Map<String, dynamic> filters = {
+                'date': selectedDate,
+                'organisation': selectedOrganisation,
+                'price': {'min': minPrice, 'max': maxPrice},
+                'category': selectedCategory,
+              };
+              debugPrint('Applied filters: $filters');
+              Navigator.pop(context, filters);
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            const Text('Category'),
+            DropdownButton<String>(
+              value: EventType.values
+                      .map((e) => e.toString().split('.').last)
+                      .contains(selectedCategory)
+                  ? selectedCategory
+                  : null,
+              hint: const Text('Select Category'),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedCategory = newValue;
+                });
+              },
+              items: EventType.values.map((EventType value) {
+                final label = value.toString().split('.').last;
+                return DropdownMenuItem<String>(
+                  value: label,
+                  child: Text(label),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+
+            const Text('Price Range'),
+            RangeSlider(
+              values: RangeValues(minPrice, maxPrice),
+              min: 0.0,
+              max: 50.0,
+              divisions: 50,
+              labels: RangeLabels(
+                minPrice.round().toString(),
+                maxPrice.round().toString(),
+              ),
+              onChanged: (RangeValues values) {
+                setState(() {
+                  minPrice = values.start;
+                  maxPrice = values.end;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            const Text('Select Date'),
+            ListTile(
+              title: Text(
+                selectedDate == null
+                    ? 'No date selected'
+                    : formatter.format(selectedDate!),
+              ),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: _selectDate,
+            ),
+            const SizedBox(height: 16),
+
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  selectedDate = null;
+                  selectedOrganisation = null;
+                  minPrice = 0.0;
+                  maxPrice = 50.0;
+                  selectedCategory = null;
+                });
+              },
+              child: const Text('Clear Filters'),
+            ),
+            const SizedBox(height: 16),
+
+            const Text('Organisation'),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: isLoadingOrgs ? null : _loadOrganisations,
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh Organisations',
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: isLoadingOrgs
+                      ? const Center(child: CircularProgressIndicator())
+                      : DropdownButton<String>(
+                          isExpanded: true,
+                          value: organisations.contains(selectedOrganisation)
+                              ? selectedOrganisation
+                              : null,
+                          hint: const Text('Select Organisation'),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedOrganisation = newValue;
+                            });
+                          },
+                          items: organisations
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 

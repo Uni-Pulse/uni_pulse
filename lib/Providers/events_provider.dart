@@ -8,12 +8,12 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
 // Import for firstWhereOrNull
 import 'package:firebase_auth/firebase_auth.dart';
-
+// Notifier class to manage events using Riverpod state management
 class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
+  /// Deletes an event from Firestore and updates the local state 
   Future<void> deleteEvent(EventData event) async {
     try {
       // Delete the event from Firestore
@@ -23,7 +23,7 @@ class EventNotifier extends StateNotifier<List<EventData>> {
           .where('date', isEqualTo: event.date)
           .limit(1)
           .get();
-
+      // Delete if found
       if (eventDoc.docs.isNotEmpty) {
         await firestore
             .collection('events')
@@ -123,10 +123,12 @@ final eventsProvider = StateNotifierProvider<EventNotifier, List<EventData>>(
   (ref) => EventNotifier(),
 );
 
+//Notifier class to manage user and organisation accounts
 class AccountNotifier extends StateNotifier<List<AccountData>> {
 
   AccountNotifier()
       : super([
+          // Dummy users (for testing or development)
           AccountData(
               userName: 'user',
               firstName: 'user',
@@ -152,6 +154,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
+  
+  /// Updates user data in Firestore and local state
+
   Future<void> addFavouriteEvent(EventData event) async{
     try{
 
@@ -164,6 +169,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   
   }
 
+>>
   Future<void> updateUser({
     required String firstName,
     required String lastName,

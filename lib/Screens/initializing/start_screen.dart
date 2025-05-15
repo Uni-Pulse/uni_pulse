@@ -3,14 +3,22 @@ import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'package:uni_pulse/Screens/initializing/register_screen.dart';
 import 'package:uni_pulse/Screens/organizations/org_register.dart'; // Make sure this path is correct
 
+/// The StartScreen is the entry point of the app where users can:
+/// - Register as an individual
+/// - Register as an organisation
+/// - Login if they already have an account
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
 
+  /// Builds the UI for the Start Screen.
+  /// Displays logo, title, and navigation buttons for user actions.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Sets the background color to match the current theme
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
+        // Allows scrolling on smaller screens
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
