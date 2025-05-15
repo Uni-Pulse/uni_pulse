@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:table_calendar/table_calendar.dart';
+// import 'package:table_calendar/table_calendar.dart';
+import 'package:uni_pulse/Screens/event_details.dart';
+// import 'package:uni_pulse/Models/events.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _lastNameController;
@@ -26,8 +30,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _profileImageUrl = '';
   bool _isEditing = false;
   File? _selectedImageFile;
-  DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
+  // DateTime _selectedDay = DateTime.now();
+  // DateTime _focusedDay = DateTime.now();
   List<String> _starredEvents = [];
 
   @override
@@ -43,7 +47,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _fetchUserData() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(currentUser.email).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.email)
+          .get();
       final data = doc.data();
       if (data != null) {
         setState(() {
@@ -52,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _email = data['email'];
           _phonenum = int.parse(data['phoneNum']);
           _profileImageUrl = data['profileImageUrl'] ?? '';
-          _starredEvents = List<String>.from(data['starredEvents'] ?? []);
+          _starredEvents = (data['starredEvents'] ?? []);
           _nameController.text = _name;
           _lastNameController.text = _lastname;
           _emailController.text = _email;
@@ -78,7 +85,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _formKey.currentState?.save();
       try {
         final userEmail = FirebaseAuth.instance.currentUser!.email;
-        await FirebaseFirestore.instance.collection('users').doc(userEmail).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userEmail)
+            .update({
           'firstName': _name,
           'lastName': _lastname,
           'email': _email,
@@ -97,22 +107,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _toggleStarredEvent(String eventName) {
-    setState(() {
-      if (_starredEvents.contains(eventName)) {
-        _starredEvents.remove(eventName);
-      } else {
-        _starredEvents.add(eventName);
-      }
-    });
-  }
+  // void _toggleStarredEvent(String eventName) {
+  //   setState(() {
+  //     if (_starredEvents.contains(eventName)) {
+  //       _starredEvents.remove(eventName);
+  //     } else {
+  //       _starredEvents.add(eventName);
+  //     }
+  //   });
+  // }
 
   void _confirmDeleteAccount() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Account'),
-        content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to delete your account? This action cannot be undone.'),
         actions: [
           TextButton(
             child: const Text('Cancel'),
@@ -135,7 +146,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final user = FirebaseAuth.instance.currentUser;
       final email = user?.email;
       if (email != null) {
-        await FirebaseFirestore.instance.collection('users').doc(email).delete();
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(email)
+            .delete();
       }
       await user?.delete();
       if (mounted) {
@@ -152,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Details'),
+        title: Text('Profile Details', style: Theme.of(context).textTheme.titleLarge),
         backgroundColor: const Color(0xFF660099),
         actions: [
           IconButton(
@@ -179,10 +193,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       radius: 60,
                       backgroundColor: Colors.grey.shade300,
                       child: _selectedImageFile != null
-                          ? ClipOval(child: Image.file(_selectedImageFile!, fit: BoxFit.cover, width: 120, height: 120))
+                          ? ClipOval(
+                              child: Image.file(_selectedImageFile!,
+                                  fit: BoxFit.cover, width: 120, height: 120))
                           : _profileImageUrl.isNotEmpty
-                          ? ClipOval(child: Image.network(_profileImageUrl, fit: BoxFit.cover, width: 120, height: 120))
-                          : const Icon(Icons.person, size: 60),
+                              ? ClipOval(
+                                  child: Image.network(_profileImageUrl,
+                                      fit: BoxFit.cover,
+                                      width: 120,
+                                      height: 120))
+                              : const Icon(Icons.person, size: 60),
                     ),
                     if (_isEditing)
                       Positioned(
@@ -197,41 +217,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
               TextFormField(
                 controller: _nameController,
                 enabled: _isEditing,
-                decoration: const InputDecoration(labelText: 'First Name', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                    labelText: 'First Name', border: OutlineInputBorder()),
                 onSaved: (value) => _name = value ?? '',
               ),
               const SizedBox(height: 15),
-
               TextFormField(
                 controller: _lastNameController,
                 enabled: _isEditing,
-                decoration: const InputDecoration(labelText: 'Last Name', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                    labelText: 'Last Name', border: OutlineInputBorder()),
                 onSaved: (value) => _lastname = value ?? '',
               ),
               const SizedBox(height: 15),
-
               TextFormField(
                 controller: _emailController,
                 enabled: _isEditing,
-                decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                    labelText: 'Email', border: OutlineInputBorder()),
                 keyboardType: TextInputType.emailAddress,
                 onSaved: (value) => _email = value ?? '',
               ),
               const SizedBox(height: 15),
-
               TextFormField(
                 controller: _phoneController,
                 enabled: _isEditing,
-                decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                    labelText: 'Phone Number', border: OutlineInputBorder()),
                 keyboardType: TextInputType.phone,
                 onSaved: (value) => _phonenum = int.tryParse(value ?? '') ?? 0,
               ),
               const SizedBox(height: 20),
-
               if (_isEditing)
                 Column(
                   children: [
@@ -241,7 +260,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       onPressed: _saveProfile,
-                      child: const Text('Save Profile', style: TextStyle(fontSize: 16, color: Colors.white)),
+                      child: const Text('Save Profile',
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                     const SizedBox(height: 15),
                     ElevatedButton(
@@ -250,38 +270,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       onPressed: _confirmDeleteAccount,
-                      child: const Text('Delete Account', style: TextStyle(fontSize: 16, color: Colors.white)),
+                      child: const Text('Delete Account',
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                     const SizedBox(height: 30),
                   ],
                 ),
-
-              const Text('Starred Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('Starred Events',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
+              Expanded(
+                child: _starredEvents.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No events found.',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount:
+                            _starredEvents.length, // Use filtered events here
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    // You need to fetch or construct the EventData object here.
+                                    // For demonstration, replace this with your actual event fetching logic.
+                                    // Example assumes you have a method getEventDataByName(String name)
+                                    final event = ref
+                                        .watch(eventsProvider.notifier)
+                                        .getEventByName(_starredEvents[index]);
+                                    if (event == null) {
+                                      return const Scaffold(
+                                        body: Center(
+                                            child: Text('Event not found')),
+                                      );
+                                    }
+                                    return EventDetailsScreen(event: event);
+                                  },
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              children: [
+                                Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      _starredEvents[index],
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(color: Colors.white),
+                                    ),
+                                    // You may add a subtitle if you have more event info
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
               for (var event in _starredEvents)
                 ListTile(
                   title: Text(event),
                   trailing: IconButton(
-                    icon: const Icon(Icons.star, color: Colors.amber),
-                    onPressed: () => _toggleStarredEvent(event),
-                  ),
+                      icon: const Icon(Icons.star, color: Colors.amber),
+                      onPressed: () => {} //_toggleStarredEvent(event),
+                      ),
                 ),
-              const SizedBox(height: 30),
-
-              const Text('Your Calendar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              TableCalendar(
-                firstDay: DateTime.utc(2022, 01, 01),
-                lastDay: DateTime.utc(2025, 12, 31),
-                focusedDay: _focusedDay,
-                selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
-                },
-              ),
+              // const SizedBox(height: 30),
+              // const Text('Your Calendar',
+              //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              // const SizedBox(height: 10),
+              // TableCalendar(
+              //   firstDay: DateTime.utc(2022, 01, 01),
+              //   lastDay: DateTime.utc(2025, 12, 31),
+              //   focusedDay: _focusedDay,
+              //   selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+              //   onDaySelected: (selectedDay, focusedDay) {
+              //     setState(() {
+              //       _selectedDay = selectedDay;
+              //       _focusedDay = focusedDay;
+              //     });
+              //   },
+              // ),
               const SizedBox(height: 20),
             ],
           ),

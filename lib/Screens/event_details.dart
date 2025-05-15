@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Screens/users/chatroom.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
 
 // ...existing imports...
 
-class EventDetailsScreen extends StatelessWidget {
+class EventDetailsScreen extends ConsumerWidget {
   const EventDetailsScreen({super.key, required this.event});
 
   final EventData event;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final formattedDate =
         DateFormat('EEEE, MMMM d, yyyy – h:mm a').format(event.date);
     final ticketPrice =
@@ -83,6 +85,24 @@ class EventDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title:  Text('Event Details', style: Theme.of(context).textTheme.titleLarge),
         elevation: 0,
+        actions: [
+            IconButton(
+              icon: const Icon(Icons.star_border_outlined),
+              onPressed: () async {
+                try{
+                  await ref.read(accountsProvider.notifier).addFavouriteEvent(event);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Event added to favourites')),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error adding event to favourites')),
+                  );
+                }
+              },
+            
+            ),
+          ],
       ),
       body: Column(
         children: [

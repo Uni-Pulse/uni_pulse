@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
+// import 'package:path/path.dart';
 // import 'package:path_provider/path_provider.dart' as syspaths;
 // import 'package:path/path.dart' as path;
 import 'package:uni_pulse/Models/acconts.dart';
@@ -13,6 +13,15 @@ class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  EventData? getEventByName(String name) {
+    try {
+      return state.firstWhere((event) => event.eventName == name);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Deletes an event from Firestore and updates the local state 
   Future<void> deleteEvent(EventData event) async {
     try {
