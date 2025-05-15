@@ -169,7 +169,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   
   }
 
->>
+
   Future<void> updateUser({
     required String firstName,
     required String lastName,
