@@ -153,7 +153,6 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   Future<void> addFavouriteEvent(EventData event) async{
-    if (state == null) return;
     try{
 
       await firestore.collection('users').doc(currentUser!.email).update({
@@ -247,7 +246,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           lastName: data['lastName'] as String,
           phoneNum: data['phoneNum'] as int,
           dob: DateTime.parse(data['dob'] as String),
-          favouriteEvents: data['favouriteEvents'] as List<EventData>
+          favouriteEvents: data['favouriteEvents'] as List<EventData>? ?? [],
         );
 
         currentUser = loggedInUser;
@@ -266,7 +265,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
             lastName: '',
             phoneNum: data['phoneNumber'] as int,
             dob: null,
-            favouriteEvents: data['favouriteEvents'] as List<EventData>
+            favouriteEvents: data['favouriteEvents'] as List<EventData>? ?? [],
           );
           currentUser = loggedInOrg;
           return loggedInOrg;

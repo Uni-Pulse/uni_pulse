@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
 
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -27,12 +28,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String _lastname = '';
   String _email = '';
   int _phonenum = 0;
-  String _profileImageUrl = '';
-  bool _isEditing = false;
+  final String _profileImageUrl = '';
+  final bool _isEditing = false;
   File? _selectedImageFile;
-  DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
-  List<String> _starredEvents = [];
+  final DateTime _selectedDay = DateTime.now();
+  final DateTime _focusedDay = DateTime.now();
+  final List<String> _starredEvents = [];
   late Future<dynamic> currentUserFuture;
 
   @override

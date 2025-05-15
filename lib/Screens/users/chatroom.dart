@@ -103,7 +103,7 @@ class ChatRoom extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat Room: $eventTitle'),
+        title: Text('Chat Room: $eventTitle', style: Theme.of(context).textTheme.titleLarge),
         // actions: [
         //   IconButton(
         //     icon: Icon(Icons.logout),
@@ -145,7 +145,7 @@ class ChatRoom extends StatelessWidget {
                           ? Icon(Icons.business, color: Colors.blue)
                           : Icon(Icons.person, color: Colors.green),
                       subtitle: Text(
-                        text,
+                        text, style: TextStyle(color: Colors.white)
                       ),
                     );
                   }).toList(),

@@ -26,7 +26,7 @@ class OrgListEvents extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('My Events'),
+          title:  Text('My Events', style: Theme.of(context).textTheme.titleLarge),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -56,8 +56,7 @@ class OrgListEvents extends ConsumerWidget {
                   prefixIcon: Icon(Icons.search,
                       color: Theme.of(context).iconTheme.color),
                   filled: true,
-                  fillColor:
-                      Theme.of(context).colorScheme.surfaceContainerLowest,
+                  
                 ),
                 onChanged: (value) {
                   ref.read(searchQueryProvider.notifier).state = value;
@@ -93,10 +92,17 @@ class OrgListEvents extends ConsumerWidget {
                               children: [
                                 Card(
                                   child: ListTile(
+                                    
                                     title:
-                                        Text(filteredEvents[index].eventName),
+                                        Text(filteredEvents[index].eventName, 
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge?.copyWith(color: Colors.white)),
                                     subtitle: Text(
                                       'Date: ${filteredEvents[index].date.toLocal().toString().split(' ')[0]}',
+                                    style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge?.copyWith(color: Colors.white)
                                     ),
                                   ),
                                 ),

@@ -128,7 +128,7 @@ void selectImage() async{
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Register"),
+        title:  Text("Register", style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -284,7 +284,7 @@ void selectImage() async{
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveAccount,
-                child: const Text("Register"),
+                child:  Text("Register", style: Theme.of(context).textTheme.bodyMedium),
               ),
               
             ],

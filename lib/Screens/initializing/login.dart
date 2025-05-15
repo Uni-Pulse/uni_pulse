@@ -86,10 +86,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 children: [
                   Text(
                     "Login",
-                    style: TextStyle(
-                      fontSize: 24,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   SizedBox(height: 20),
@@ -109,12 +107,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ElevatedButton(
                     onPressed: () => handleAuth(ref),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      
                     ),
-                    child: Text("LOGIN"),
+                    child: Text("LOGIN", style: Theme.of(context).textTheme.bodyMedium),
                   )
                 ],
               ),

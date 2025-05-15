@@ -16,9 +16,16 @@ final colorSchemeLight = ColorScheme.fromSwatch(
       const Color.fromARGB(255, 220, 199, 254), // override surface color here
 );
 
-final colorSchemeDark = ColorScheme.fromSeed(
-  seedColor: const Color.fromARGB(255, 63, 5, 238),
-  brightness: Brightness.dark,
+final colorSchemeDark = ColorScheme.fromSwatch(
+  primarySwatch: Colors.deepPurple,
+  backgroundColor: const Color.fromARGB(
+      255, 159, 145, 192), // slightly purple-tinted background
+  accentColor: Colors.deepPurpleAccent,
+  cardColor: const Color.fromARGB(255, 86, 63, 100),
+  errorColor: Colors.red,
+).copyWith(
+  surface:
+      const Color.fromARGB(255, 72, 42, 73), // override surface color here
 );
 
 final lightTheme = ThemeData(
@@ -35,8 +42,12 @@ final lightTheme = ThemeData(
     unselectedItemColor: colorSchemeLight.onSurface,
   ),
   textTheme: const TextTheme(
-    bodyLarge: TextStyle(fontSize: 16.0),
-    bodyMedium: TextStyle(fontSize: 14.0),
+    titleLarge: TextStyle(
+      fontSize: 30.0,
+      color: Colors.black,
+    ),
+    bodyLarge: TextStyle(fontSize: 16.0, color: Colors.white),
+    bodyMedium: TextStyle(fontSize: 14.0, color: Colors.white),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
@@ -45,11 +56,45 @@ final lightTheme = ThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
   ),
-  inputDecorationTheme: InputDecorationTheme(
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-    filled: true,
-    fillColor: colorSchemeLight.surface,
+  iconTheme: const IconThemeData(
+    color: Colors.deepPurple, // Set your desired icon color                // Optional: set a default icon size
   ),
+   iconButtonTheme: IconButtonThemeData(
+    style: ButtonStyle(
+      iconColor: WidgetStateProperty.all(Colors.deepPurple),
+      backgroundColor: WidgetStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.deepPurple.withOpacity(0.1)),
+      shape: WidgetStateProperty.all(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: const BorderSide(color: Colors.deepPurple),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: const BorderSide(color: Colors.deepPurple),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+  ),
+  labelStyle: const TextStyle(
+    color: Color.fromARGB(255, 1, 1, 1),
+    fontWeight: FontWeight.normal,
+  ),
+  hintStyle: const TextStyle(
+    color: Color.fromARGB(255, 34, 27, 27),
+    fontStyle: FontStyle.italic,
+  ),
+  fillColor: const Color.fromARGB(255, 192, 184, 184), // or colorScheme.surface for dark mode
+  filled: true,
+  prefixIconColor: Colors.deepPurple, 
+  suffixIconColor: Colors.deepPurple, 
+),
 );
 
 final darkTheme = ThemeData(
@@ -57,30 +102,68 @@ final darkTheme = ThemeData(
   useMaterial3: true,
   scaffoldBackgroundColor: colorSchemeDark.surface,
   appBarTheme: AppBarTheme(
-    backgroundColor: colorSchemeLight.primary,
+    backgroundColor: const Color.fromARGB(255, 48, 31, 48),
     foregroundColor: colorSchemeDark.onSurface,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: colorSchemeLight.primary,
-    selectedItemColor: colorSchemeDark.primary,
-    unselectedItemColor: colorSchemeDark.onSurface,
+    backgroundColor: const Color.fromARGB(255, 48, 31, 48),
+    selectedItemColor: Colors.white,
+    unselectedItemColor: const Color.fromARGB(255, 148, 114, 148),
   ),
   textTheme: const TextTheme(
-    bodyLarge: TextStyle(fontSize: 16.0),
-    bodyMedium: TextStyle(fontSize: 14.0),
+    titleLarge: TextStyle(
+      fontSize: 30.0,
+      color: Colors.white,
+    ),
+    bodyLarge: TextStyle(fontSize: 21.0, color: Colors.white),
+    bodyMedium: TextStyle(fontSize: 14.0, color: Colors.white),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: colorSchemeDark.primary,
-      foregroundColor: colorSchemeDark.onPrimary,
+      backgroundColor: const Color.fromARGB(255, 48, 31, 48),
+      foregroundColor: const Color.fromARGB(255, 48, 31, 48),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
   ),
-  inputDecorationTheme: InputDecorationTheme(
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-    filled: true,
-    fillColor: colorSchemeDark.surface,
+  iconTheme: const IconThemeData(
+    color: Colors.white, // Set your desired icon color              // Optional: set a default icon size
   ),
+  iconButtonTheme: IconButtonThemeData(
+    style: ButtonStyle(
+      iconColor: WidgetStateProperty.all(Colors.white),
+      backgroundColor: WidgetStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.1)),
+      shape: WidgetStateProperty.all(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: const BorderSide(color: Colors.white),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: const BorderSide(color: Colors.white),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: const BorderSide(color: Colors.white, width: 2),
+  ),
+  labelStyle: const TextStyle(
+    color: Color.fromARGB(255, 254, 254, 255),
+    fontWeight: FontWeight.normal,
+  ),
+  hintStyle: const TextStyle(
+    color: Color.fromARGB(255, 227, 222, 222),
+    fontStyle: FontStyle.italic,
+  ),
+  fillColor: colorSchemeDark.surface, // or colorScheme.surface for dark mode
+  filled: true,
+  prefixIconColor: Colors.white, 
+  suffixIconColor: Colors.white, 
+),
 );
 
 // final lightTheme = ThemeData().copyWith(colorScheme: colorScheme,);

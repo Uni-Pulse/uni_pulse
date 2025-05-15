@@ -27,7 +27,7 @@ class ListEvents extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('Events'),
+          title:  Text('Events', style: Theme.of(context).textTheme.titleLarge,),
           actions: [
             IconButton(
               icon: const Icon(Icons.filter_list),
@@ -55,9 +55,7 @@ class ListEvents extends ConsumerWidget {
                   decoration: const InputDecoration(
                     hintText: 'Search',
                     prefixIcon: Icon(Icons.search),
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
+                    filled: true,
                   ),
                   onChanged: (value) {
                     ref.read(searchQueryProvider.notifier).state = value;
@@ -89,8 +87,8 @@ class ListEvents extends ConsumerWidget {
                         //image: eventsInfo[index].image,
                         date: eventsInfo[index].date,
                         backgroundColor: index.isEven
-                            ? const Color.fromRGBO(216, 240, 253, 1)
-                            : const Color.fromRGBO(245, 247, 249, 1),
+                            ? const Color.fromARGB(255, 96, 72, 99)
+                            : const Color.fromARGB(255, 97, 65, 105),
                       ),
                     );
                   } else {

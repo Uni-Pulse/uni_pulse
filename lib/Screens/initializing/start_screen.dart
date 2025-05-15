@@ -17,8 +17,8 @@ class StartScreen extends StatelessWidget {
             children: [
               // Logo Image
               Container(
-                width: 100,
-                height: 100,
+                width: 150,
+                height: 150,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                 ),
@@ -30,29 +30,30 @@ class StartScreen extends StatelessWidget {
                 ),
               ),
               // Title & Subtitle
-              const SizedBox(height: 20),
-              const Text(
-                "UNI Pulse",
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
+              const SizedBox(height: 70),
+              Text("UNI Pulse",
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 40),
 
               // Buttons
               SizedBox(
-                width: 180,
+                width: 250,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (ctx) => const RegisterScreen()));
                   },
-                  child: const Text("Register-Individual"),
+                  child: Text(
+                    "Register As Individual",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
               ),
               const SizedBox(height: 15),
               // Register Organisation Button
               SizedBox(
-                width: 180,
+                width: 250,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
@@ -63,19 +64,25 @@ class StartScreen extends StatelessWidget {
                               const RegisterOrganisationScreen()),
                     );
                   },
-                  child: const Text("Register Organisation"),
+                  child: Text(
+                    "Register As Organisation",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
               ),
               const SizedBox(height: 15),
               SizedBox(
-                width: 180,
+                width: 250,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (ctx) => const AuthScreen()));
                   },
-                  child: const Text("Login"),
+                  child: Text(
+                    "Login",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
               ),
             ],
