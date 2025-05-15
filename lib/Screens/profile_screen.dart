@@ -123,7 +123,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         initialValue: _phonenum.toString(),
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
-                          border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.phone,
                         onSaved: (value) => _lastname = value ?? '',
@@ -131,10 +130,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       SizedBox(height: 15),
 
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF660099),
-                          padding: EdgeInsets.symmetric(vertical: 15),
-                        ),
                         onPressed: () async {
                           // Save the form data
                           if (_formKey.currentState?.validate() ?? false) {

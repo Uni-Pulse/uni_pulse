@@ -121,8 +121,9 @@ class ChatRoom extends StatelessWidget {
               stream:
                   messages.orderBy('timestamp', descending: true).snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData)
+                if (!snapshot.hasData) {
                   return Center(child: CircularProgressIndicator());
+                }
                 return ListView(
                   reverse: true,
                   children: snapshot.data!.docs.map((doc) {
