@@ -1,4 +1,6 @@
+
 import 'package:uni_pulse/Models/events.dart'; 
+
 
 class AccountData {
   final String email;
@@ -7,8 +9,10 @@ class AccountData {
   final String firstName;
   final String lastName;
   final int phoneNum;
-  final DateTime dob; // Added dob field
-  List<EventData> favouriteEvents;
+  final String userName;
+  final DateTime? dob; 
+   List<EventData> favouriteEvents;// Added dob field
+
 
   AccountData({
     required this.email,
@@ -17,9 +21,11 @@ class AccountData {
     required this.firstName,
     required this.lastName,
     required this.phoneNum,
+    required this.userName,
     required this.dob, // Added dob to constructor
     required this.favouriteEvents,
   });
+
 
   //converting account data so compatible with firebase
   Map<String, dynamic> toMap() {
@@ -48,3 +54,4 @@ class AccountData {
     );
   }
 }
+

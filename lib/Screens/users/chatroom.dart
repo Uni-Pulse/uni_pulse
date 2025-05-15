@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // void main() async {
@@ -18,7 +16,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 //           : ChatRoom(),
 //     );
 //   }
-  
+
 // }
 
 // class LoginScreen extends StatelessWidget {
@@ -73,29 +71,36 @@ class ChatRoom extends StatelessWidget {
   final String eventTitle;
   final String eventId;
   final TextEditingController _messageController = TextEditingController();
+  final String username;
+  final bool isOrganisation;
   // final CollectionReference messages = FirebaseFirestore.instance.collection('messages');
-  
 
-  ChatRoom({super.key, required this.eventId, required this.eventTitle});
-
+  ChatRoom({
+    super.key,
+    required this.eventId,
+    required this.eventTitle,
+    required this.username,
+    required this.isOrganisation,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final CollectionReference messages = FirebaseFirestore.instance
+        .collection('events')
+        .doc(eventId)
+        .collection('messages');
 
-      final CollectionReference messages = FirebaseFirestore.instance
-      .collection('events')
-      .doc(eventId)
-      .collection('messages');
+    void sendMessage() {
+      if (_messageController.text.trim().isEmpty) return;
+      messages.add({
+        'text': _messageController.text.trim(),
+        'sender': username,
+        'isOrganisation': isOrganisation,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      _messageController.clear();
+    }
 
-     void sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-    messages.add({
-      'text': _messageController.text.trim(),
-      'sender': FirebaseAuth.instance.currentUser!.email,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-    _messageController.clear();
-  }
     return Scaffold(
       appBar: AppBar(
         title: Text('Chat Room: $eventTitle'),
@@ -113,15 +118,35 @@ class ChatRoom extends StatelessWidget {
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: messages.orderBy('timestamp', descending: true).snapshots(),
+              stream:
+                  messages.orderBy('timestamp', descending: true).snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
                 return ListView(
                   reverse: true,
                   children: snapshot.data!.docs.map((doc) {
+                    final sender = doc['sender'] ?? 'Unknown Sender';
+                    final text = doc['text'] ?? 'No Text';
+                    final data = doc.data() as Map<String, dynamic>;
+                    final isOrg = data.containsKey('isOrganisation')
+                        ? data['isOrganisation']
+                        : false;
                     return ListTile(
-                      title: Text(doc['sender'] ?? 'Unknown Sender'),
-                      subtitle: Text(doc['text'] ?? 'No Text'),
+                      title: Text(
+                        sender,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isOrg ? Colors.blue : Colors.green,
+                        ),
+                      ),
+                      trailing: isOrg
+                          ? Icon(Icons.business, color: Colors.blue)
+                          : Icon(Icons.person, color: Colors.green),
+                      subtitle: Text(
+                        text,
+                      ),
                     );
                   }).toList(),
                 );

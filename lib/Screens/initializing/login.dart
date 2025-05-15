@@ -9,7 +9,9 @@ class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
   @override
-  ConsumerState<AuthScreen> createState() {return _AuthScreenState();}
+  ConsumerState<AuthScreen> createState() {
+    return _AuthScreenState();
+  }
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
@@ -26,48 +28,49 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text("OK"),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            )
-          ),
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+              ),
+              child: Text("OK")),
         ],
       ),
     );
   }
 
-void handleAuth(WidgetRef ref) async {
-  String email = emailController.text.trim();
-  String password = passwordController.text.trim();
+  void handleAuth(WidgetRef ref) async {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
 
-  if (email.isEmpty || password.isEmpty) {
-    showErrorDialog("All fields are required.");
-    return;
-  }
-
-  try {
-    final account = await ref.read(accountsProvider.notifier).authenticate(email, password);
-
-    if (account != null) {
-      Navigator.pop(context);
-      if (account.isOrganisation) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => OrgHomePage()),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => HomePage()),
-        );
-      }
-    } else {
-      showErrorDialog("Invalid credentials. Please try again.");
+    if (email.isEmpty || password.isEmpty) {
+      showErrorDialog("All fields are required.");
+      return;
     }
-  } catch (e) {
-    showErrorDialog("An error occurred during login. Please try again.");
-    debugPrint('Error during login: $e');
+
+    try {
+      final account = await ref
+          .read(accountsProvider.notifier)
+          .authenticate(email, password);
+
+      if (account != null) {
+        Navigator.pop(context);
+        if (account.isOrganisation) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (ctx) => OrgHomePage()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (ctx) => HomePage()),
+          );
+        }
+      } else {
+        showErrorDialog("Invalid credentials. Please try again.");
+      }
+    } catch (e) {
+      showErrorDialog("An error occurred during login. Please try again.");
+      debugPrint('Error during login: $e');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -84,9 +87,9 @@ void handleAuth(WidgetRef ref) async {
                   Text(
                     "Login",
                     style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   SizedBox(height: 20),

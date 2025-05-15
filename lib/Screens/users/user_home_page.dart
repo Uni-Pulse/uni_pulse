@@ -19,9 +19,9 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: SafeArea(
         child: IndexedStack(
-        index: currentPage,
-        children: pages,
-      ),
+          index: currentPage,
+          children: pages,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         iconSize: 35,

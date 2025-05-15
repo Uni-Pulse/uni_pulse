@@ -5,7 +5,7 @@ import 'dart:io'; // used to gain access to the File type
 class ImageCamera extends StatefulWidget {
   const ImageCamera({super.key, required this.onEventImage});
 
-  final void Function (File image) onEventImage;
+  final void Function(File image) onEventImage;
   @override
   State<ImageCamera> createState() {
     return _ImageCameraState();

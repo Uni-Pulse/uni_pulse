@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Screens/users/chatroom.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EventDetailsScreen extends ConsumerWidget {
   const EventDetailsScreen({super.key, required this.event});
@@ -12,8 +13,10 @@ class EventDetailsScreen extends ConsumerWidget {
   final EventData event;
   // add a constructipor to show deleye button for only the event owner
   @override
+
   Widget build(BuildContext context, WidgetRef ref) {
     
+
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(title: Text('Event Details'),
@@ -46,13 +49,12 @@ class EventDetailsScreen extends ConsumerWidget {
             Text(
               event.description,
               style: const TextStyle(fontSize: 16),
-            ),   //Event description might needs saving in the database
+            ), //Event description might needs saving in the database
             const SizedBox(height: 10),
             Text(
               'Date: ${event.date}',
               style: const TextStyle(fontSize: 16),
             ),
-
 
             const SizedBox(height: 10),
             Text(
@@ -70,18 +72,57 @@ class EventDetailsScreen extends ConsumerWidget {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
-            
 
-            ElevatedButton(onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatRoom(eventTitle: event.eventName, eventId: event.eventId,),),);
-            }, child: const Text('Open Room')),
+            ElevatedButton(
+              onPressed: () async {
+                final currentUser = FirebaseAuth.instance.currentUser;
+
+                if (currentUser != null) {
+                  // Fetch additional user details from Firestore
+                  final userDoc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(currentUser.uid)
+                      .get();
+
+                  String username;
+                  bool isOrganisation;
+
+                  if (userDoc.exists && userDoc.data() != null) {
+                    final userData = userDoc.data()!;
+                    username =
+                        (userData['username'] as String?) ?? 'Unknown User';
+                    isOrganisation =
+                        (userData['isOrganisation'] as bool?) ?? false;
+                  } else {
+                    debugPrint(
+                        'Firestore document for user ${currentUser.uid} not found');
+                    username = 'Unknown User';
+                    isOrganisation = false;
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatRoom(
+                        eventTitle: event.eventName,
+                        eventId: event.eventId,
+                        username: username, // Replace with the actual username
+                        isOrganisation:
+                            isOrganisation, // Replace with the actual value
+                      ),
+                    ),
+                  );
+                } else {
+                  debugPrint('No user is currently logged in.');
+                }
+              },
+              child: const Text('Open Room'),
+            ),
 
             const SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
-
                 // Text([type.name, ':', Icons.cabin_outlined].toString()),
               ],
             ),
@@ -89,13 +130,9 @@ class EventDetailsScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                
                 // Text([type.name, ':', Icons.cabin_outlined].toString()),
               ],
             ),
-         
-
-            
           ],
         ));
   }

@@ -39,7 +39,8 @@ class OrgListEvents extends ConsumerWidget {
                 );
 
                 if (filtersApplied != null) {
-                  ref.read(appliedFiltersProvider.notifier).state = filtersApplied;
+                  ref.read(appliedFiltersProvider.notifier).state =
+                      filtersApplied;
                 }
               },
             ),
@@ -52,9 +53,11 @@ class OrgListEvents extends ConsumerWidget {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Search',
-                  prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
+                  prefixIcon: Icon(Icons.search,
+                      color: Theme.of(context).iconTheme.color),
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+                  fillColor:
+                      Theme.of(context).colorScheme.surfaceContainerLowest,
                 ),
                 onChanged: (value) {
                   ref.read(searchQueryProvider.notifier).state = value;
@@ -70,7 +73,8 @@ class OrgListEvents extends ConsumerWidget {
                       ),
                     )
                   : ListView.builder(
-                      itemCount: filteredEvents.length, // Use filtered events here
+                      itemCount:
+                          filteredEvents.length, // Use filtered events here
                       itemBuilder: (context, index) {
                         if (_shouldDisplayProduct(filteredEvents[index], ref)) {
                           return GestureDetector(
@@ -89,7 +93,8 @@ class OrgListEvents extends ConsumerWidget {
                               children: [
                                 Card(
                                   child: ListTile(
-                                    title: Text(filteredEvents[index].eventName),
+                                    title:
+                                        Text(filteredEvents[index].eventName),
                                     subtitle: Text(
                                       'Date: ${filteredEvents[index].date.toLocal().toString().split(' ')[0]}',
                                     ),
@@ -99,7 +104,8 @@ class OrgListEvents extends ConsumerWidget {
                                   bottom: 10,
                                   right: 10,
                                   child: IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
                                     onPressed: () async {
                                       final confirm = await showDialog<bool>(
                                         context: context,
@@ -109,11 +115,13 @@ class OrgListEvents extends ConsumerWidget {
                                               'Are you sure you want to delete this event?'),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.of(ctx).pop(false),
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(false),
                                               child: const Text('Cancel'),
                                             ),
                                             TextButton(
-                                              onPressed: () => Navigator.of(ctx).pop(true),
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(true),
                                               child: const Text('Delete'),
                                             ),
                                           ],
@@ -123,7 +131,8 @@ class OrgListEvents extends ConsumerWidget {
                                       if (confirm == true) {
                                         await ref
                                             .read(eventsProvider.notifier)
-                                            .deleteEvent(filteredEvents[index]); // Implement deleteEvent
+                                            .deleteEvent(filteredEvents[
+                                                index]); // Implement deleteEvent
                                       }
                                     },
                                   ),
@@ -149,13 +158,14 @@ class OrgListEvents extends ConsumerWidget {
 
     // Search filter
     if (searchQuery.isNotEmpty &&
-        (product.eventName == null || !product.eventName.toLowerCase().contains(searchQuery))) {
+        (!product.eventName.toLowerCase().contains(searchQuery))) {
       return false;
     }
 
     // Category filter
     if (appliedFilters['category'] != null &&
-        appliedFilters['category'] != product.eventType) { // Compare with eventType
+        appliedFilters['category'] != product.eventType) {
+      // Compare with eventType
       return false;
     }
 
@@ -166,7 +176,8 @@ class OrgListEvents extends ConsumerWidget {
       if (priceRange is Map &&
           priceRange['min'] != null &&
           priceRange['max'] != null) {
-        double productPrice = double.parse(product.ticketPrice); // Assuming ticketPrice is a String that can be parsed to double
+        double productPrice = double.parse(product
+            .ticketPrice); // Assuming ticketPrice is a String that can be parsed to double
 
         double minPrice = priceRange['min'] ?? 0.0;
         double maxPrice = priceRange['max'] ?? 50.0;

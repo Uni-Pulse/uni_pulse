@@ -14,7 +14,7 @@ class OrgHomePage extends StatefulWidget {
 class _OrgHomePageState extends State<OrgHomePage> {
   int currentPage = 0;
 
-  List<Widget> pages = [OrgListEvents(),ProfileScreen()];
+  List<Widget> pages = [OrgListEvents(), ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,6 @@ class _OrgHomePageState extends State<OrgHomePage> {
             icon: Icon(Icons.account_circle),
             label: 'Profile',
           ),
-          
         ],
       ),
     );

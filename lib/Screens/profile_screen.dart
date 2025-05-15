@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:table_calendar/table_calendar.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+
   ConsumerState<ProfileScreen> createState() {
     return _ProfileScreenState();
   }
-}
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+
+class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
 
-  late Future<dynamic> currentUserFuture;
+  String _name = '';
+  String _lastname = '';
+  String _email = '';
+  int _phonenum = 0;
+  String _profileImageUrl = '';
+  bool _isEditing = false;
+  File? _selectedImageFile;
+  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
+  List<String> _starredEvents = [];
 
   @override
   void initState() {
     super.initState();
+
     currentUserFuture =
         Future.value(ref.read(accountsProvider.notifier).currentUser);
   }
@@ -190,5 +205,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             );
           }
         });
+
   }
 }

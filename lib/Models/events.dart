@@ -1,6 +1,12 @@
 // import 'package:uuid/uuid.dart';
 
-enum EventType {arts, sports, careers, social, other } // figyure out a way to make this more dynamic
+enum EventType {
+  arts,
+  sports,
+  careers,
+  social,
+  other
+} // figyure out a way to make this more dynamic
 //enum Organisations {unipulse, careersOffice, example } // figyure out a way to make this more dynamic
 
 class EventData {
@@ -15,11 +21,11 @@ class EventData {
   final String eventId;
 
   const EventData({
-    // required this.id, 
+    // required this.id,
     //required this.image,
     required this.eventName,
     required this.organisation,
-    required this.date, 
+    required this.date,
     required this.ticketPrice,
     required this.eventType,
     required this.description,
@@ -49,5 +55,3 @@ class EventData {
     );
   }
 }
-
-

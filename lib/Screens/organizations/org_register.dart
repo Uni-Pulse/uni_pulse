@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
+import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
-// import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'package:uni_pulse/Screens/initializing/utils.dart';
 
-class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+class RegisterOrganisationScreen extends ConsumerStatefulWidget {
+  const RegisterOrganisationScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() {
-    return _RegisterScreenState();
-  }
+  ConsumerState<RegisterOrganisationScreen> createState() =>
+      _RegisterOrganisationScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _RegisterOrganisationScreenState extends ConsumerState<RegisterOrganisationScreen> {
 
 Uint8List? _image;
 void selectImage() async{
@@ -26,65 +23,24 @@ void selectImage() async{
     _image = img;
   });
 }
- 
-  // final _formKey = GlobalKey<FormState>();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
+
+  final TextEditingController _orgNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
-  bool isOrganisation = false;
+  final _formKey = GlobalKey<FormState>();
+  // Add more controllers for organisation-specific fields if needed
 
-  DateTime? _selectedDate;
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = (await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-    ))!;
-    if (picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _dobController.text =
-            "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
-      });
-    }
-  }
-
-  // Future<void> _registerUser() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     try {
-
-  //       // await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  //       //   email: _emailController.text.trim(),
-  //       //   password: _passwordController.text.trim(),
-  //       // );
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Registration Successful!")),
-  //       );
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("Error: ${e.toString()}")),
-  //       );
-  //     }
-  //   }
-  // }
-
-  void _saveAccount() async {
-    if (_firstNameController.text.isEmpty ||
-        _lastNameController.text.isEmpty ||
-        _phoneNumberController.text.isEmpty ||
+  void _saveOrganisationAccount() async {
+    if (_orgNameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty ||
-        _usernameController.text.isEmpty ||
-        _dobController.text.isEmpty) {
+        _phoneNumberController.text.isEmpty ||
+        _usernameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
       );
@@ -97,18 +53,18 @@ void selectImage() async{
       );
       return;
     }
+    if (!_formKey.currentState!.validate()) return;
 
+    // Call a provider method for registering an organisation
     final String? errorMessage =
-        await ref.read(accountsProvider.notifier).registerUser(
-              _firstNameController.text.trim(),
-              _lastNameController.text.trim(),
-              _phoneNumberController.text.trim(),
-              _emailController.text.trim(),
-              _passwordController.text.trim(),
-              _selectedDate!,
-              isOrganisation,
-              _usernameController.text.trim(),
+        await ref.read(accountsProvider.notifier).registerOrganisation(
+              orgName: _orgNameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+              phoneNumber: _phoneNumberController.text.trim(),
+              userName: _usernameController.text.trim(),
             );
+
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration failed: $errorMessage")),
@@ -116,10 +72,11 @@ void selectImage() async{
       return;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Registration Successful!")),
+        const SnackBar(content: Text("Organisation Registration Successful!")),
       );
       Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => const AuthScreen())); //_registerUser,
+        builder: (ctx) => const AuthScreen(),
+      ));
     }
   }
 
@@ -128,16 +85,16 @@ void selectImage() async{
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Register"),
+        title: const Text("Register Organisation"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          // key: _formKey,
+          key: _formKey,
           child: ListView(
             children: [
-              Center(
-                child: Stack(
+               Center(
+                 child: Stack(
                   children: [
                     _image != null ?
                          CircleAvatar(
@@ -156,7 +113,21 @@ void selectImage() async{
                       ),
                     )
                   ],
-                ),
+                               ),
+               ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                controller: _orgNameController,
+                decoration:
+                    const InputDecoration(labelText: "Organisation Name"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter the organisation name";
+                  }
+                  return null;
+                },
               ),
               SizedBox(
                 height: 20,
@@ -170,32 +141,6 @@ void selectImage() async{
                   }
                   if (value.length < 3) {
                     return "Username must be at least 3 characters";
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                controller: _firstNameController,
-                decoration: const InputDecoration(labelText: "First Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your first name";
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                controller: _lastNameController,
-                decoration: const InputDecoration(labelText: "Last Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your last name";
                   }
                   return null;
                 },
@@ -266,27 +211,11 @@ void selectImage() async{
               SizedBox(
                 height: 20,
               ),
-              TextFormField(
-                controller: _dobController,
-                decoration: const InputDecoration(labelText: "Date Of Birth"),
-                readOnly: true,
-                onTap: () => _selectDate(context),
-                validator: (value) {
-                  if (_selectedDate == null) {
-                    return "Please select a date of birth";
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(
-                height: 20,
-              ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _saveAccount,
-                child: const Text("Register"),
+                onPressed: _saveOrganisationAccount,
+                child: const Text("Register Organisation"),
               ),
-              
             ],
           ),
         ),
@@ -294,5 +223,3 @@ void selectImage() async{
     );
   }
 }
-
-// test commit

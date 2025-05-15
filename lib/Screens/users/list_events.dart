@@ -6,26 +6,22 @@ import 'package:uni_pulse/Widgets/filters.dart';
 import 'package:uni_pulse/Providers/events_provider.dart'; // Import the events provider
 import 'package:uni_pulse/Models/events.dart';
 
-
 final appliedFiltersProvider = StateProvider<Map<String, dynamic>>((ref) => {});
-  final searchQueryProvider = StateProvider<String>((ref) => '');
-class ListEvents extends ConsumerWidget {
-  ListEvents({super.key});
-  // Use a StateProvider to hold the applied filters
-  
+final searchQueryProvider = StateProvider<String>((ref) => '');
 
+class ListEvents extends ConsumerWidget {
+  const ListEvents({super.key});
+  // Use a StateProvider to hold the applied filters
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final eventsInfo = ref.watch(eventsProvider); 
+    final eventsInfo = ref.watch(eventsProvider);
     // Use the provider to get events
 
     const border = OutlineInputBorder(
       borderSide: BorderSide(color: Color.fromRGBO(225, 225, 225, 1)),
       borderRadius: BorderRadius.horizontal(left: Radius.circular(50)),
     );
-
-    
 
     return SafeArea(
       child: Scaffold(
@@ -42,7 +38,8 @@ class ListEvents extends ConsumerWidget {
                 );
 
                 if (filtersApplied != null) {
-                  ref.read(appliedFiltersProvider.notifier).state = filtersApplied;
+                  ref.read(appliedFiltersProvider.notifier).state =
+                      filtersApplied;
                 }
               },
             ),
@@ -51,23 +48,23 @@ class ListEvents extends ConsumerWidget {
         body: Column(
           children: [
             Expanded(
-                flex: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Search',
-                      prefixIcon: Icon(Icons.search),
-                      border: border,
-                      enabledBorder: border,
-                      focusedBorder: border,
-                    ),
-                    onChanged: (value) {
-                      ref.read(searchQueryProvider.notifier).state = value;
-                    },
+              flex: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Search',
+                    prefixIcon: Icon(Icons.search),
+                    border: border,
+                    enabledBorder: border,
+                    focusedBorder: border,
                   ),
+                  onChanged: (value) {
+                    ref.read(searchQueryProvider.notifier).state = value;
+                  },
                 ),
               ),
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: eventsInfo.length, // Using global products here
@@ -79,20 +76,21 @@ class ListEvents extends ConsumerWidget {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              return EventDetailsScreen(event: eventsInfo[index]);
+                              return EventDetailsScreen(
+                                  event: eventsInfo[index]);
                             },
                           ),
                         );
                       },
                       child: EventCard(
                         eventname: eventsInfo[index].eventName,
-                        ticketPrice: double.parse(eventsInfo[index].ticketPrice),
+                        ticketPrice:
+                            double.parse(eventsInfo[index].ticketPrice),
                         //image: eventsInfo[index].image,
                         date: eventsInfo[index].date,
-                        backgroundColor:
-                            index.isEven
-                                ? const Color.fromRGBO(216, 240, 253, 1)
-                                : const Color.fromRGBO(245, 247, 249, 1),
+                        backgroundColor: index.isEven
+                            ? const Color.fromRGBO(216, 240, 253, 1)
+                            : const Color.fromRGBO(245, 247, 249, 1),
                       ),
                     );
                   } else {
@@ -107,40 +105,41 @@ class ListEvents extends ConsumerWidget {
     );
   }
 
- bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
-  final appliedFilters = ref.watch(appliedFiltersProvider);
-  final searchQuery = ref.watch(searchQueryProvider).toLowerCase();
+  bool _shouldDisplayProduct(EventData product, WidgetRef ref) {
+    final appliedFilters = ref.watch(appliedFiltersProvider);
+    final searchQuery = ref.watch(searchQueryProvider).toLowerCase();
 
-  // Search filter
-  if (searchQuery.isNotEmpty &&
-      !product.eventName.toLowerCase().contains(searchQuery)) {
-    return false;
-  }
+    // Search filter
+    if (searchQuery.isNotEmpty &&
+        !product.eventName.toLowerCase().contains(searchQuery)) {
+      return false;
+    }
 
-  // Category filter
-  if (appliedFilters['category'] != null &&
-      appliedFilters['category'] != product) {
-    return false;
-  }
+    // Category filter
+    if (appliedFilters['category'] != null &&
+        appliedFilters['category'] !=
+            product.eventType.toString().split('.').last) {
+      return false;
+    }
 
-  // Price filter
-  if (appliedFilters['price'] != null) {
-    var priceRange = appliedFilters['price'];
+    // Price filter
+    if (appliedFilters['price'] != null) {
+      var priceRange = appliedFilters['price'];
 
-    if (priceRange is Map &&
-        priceRange['min'] != null &&
-        priceRange['max'] != null) {
-      double productPrice = double.parse(product.ticketPrice);
+      if (priceRange is Map &&
+          priceRange['min'] != null &&
+          priceRange['max'] != null) {
+        double productPrice = double.parse(product.ticketPrice);
 
-      double minPrice = priceRange['min'] ?? 0.0;
-      double maxPrice = priceRange['max'] ?? 50.0;
+        double minPrice = priceRange['min'] ?? 0.0;
+        double maxPrice = priceRange['max'] ?? 50.0;
 
-      if (productPrice < minPrice || productPrice > maxPrice) {
-        return false;
+        if (productPrice < minPrice || productPrice > maxPrice) {
+          return false;
+        }
       }
     }
-  }
 
-  return true;
-}
+    return true;
+  }
 }
