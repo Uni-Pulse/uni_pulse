@@ -7,8 +7,10 @@ import 'package:flutter/services.dart'; // used to only allow numeric inputs in 
 
 import 'package:uni_pulse/Providers/events_provider.dart';
 
+// Formatter to display dates in MM/DD/YYYY format
 final formatter = DateFormat.yMd();
 
+/// Screen for adding a new event. Supports title, date, type, description, and ticket price.
 class AddEventScreen extends ConsumerStatefulWidget {
   //Consumer stateful widget gives access to riverpod
   const AddEventScreen({super.key});
@@ -20,18 +22,23 @@ class AddEventScreen extends ConsumerStatefulWidget {
 }
 
 class _AddEventState extends ConsumerState<AddEventScreen> {
+  // Controllers for input fields
   final _titleController = TextEditingController();
+  // selected values
   DateTime? _selectedDate;
   final _descriptionController = TextEditingController();
   EventType _eventType = EventType.other;
   final _ticketPriceController = TextEditingController();
+  // Info about current user/organisation
   late final _currentUser;
   late final _organisationName; // this should be dynamic, but for now it is hardcoded
 
+  /// Initializes user-related variables when screen is first loaded
   @override
   void initState() {
     super.initState();
     _currentUser = ref.read(accountsProvider.notifier).currentUser;
+    // If user is not found, fallback to placeholder
     if (_currentUser == null) {
       // Handle the case where the user is not logged in
       debugPrint('Error: No user is currently logged in.');
@@ -40,8 +47,10 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
       _organisationName = _currentUser.firstName;
     }
   }
-
+  /// Function to handle saving of the event.
+  /// Validates input, then passes data to Riverpod provider to store it.
   void _eventSave() {
+    // Validate required fields
     if (_titleController.text.isEmpty ||
         _selectedDate == null ||
         _ticketPriceController.text.isEmpty) {
@@ -50,7 +59,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
       );
       return;
     }
-
+    // Debug logs for dev
     debugPrint('Saving event...');
     debugPrint('Title: ${_titleController.text}');
     debugPrint('Organisation: $_organisationName');
@@ -60,6 +69,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
     debugPrint('Description: ${_descriptionController.text}');
     debugPrint('Current User Email: ${_currentUser?.email}');
 
+    // Save event using provider
     ref.read(eventsProvider.notifier).addEvent(
           _titleController.text,
           _organisationName,
@@ -72,6 +82,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
     Navigator.of(context).pop(); // Close the screen after saving
   }
 
+  /// Opens a date picker and updates the selected date
   _eventdatepicker() async {
     final now = DateTime.now();
     final lastDate = DateTime(now.year + 1, now.month, now.day);
@@ -80,11 +91,13 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
       firstDate: now,
       lastDate: lastDate,
     );
+    // Update the UI with the selected date
     setState(() {
       _selectedDate = pickedDate;
     });
   }
 
+  /// Builds the UI for the event creation form
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,6 +129,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                         border: OutlineInputBorder()),
                   ),
                 ),
+                // Row for Date picker, Event type dropdown, and Ticket price
                 Row(
                   children: [
                     IconButton(
@@ -123,10 +137,12 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                       icon: const Icon(Icons.calendar_month),
                     ),
                     const Text('Event Date: '),
+                    // Display selected date or fallback
                     Text(_selectedDate == null
                         ? 'No date selected'
                         : formatter.format(_selectedDate!)),
                     const SizedBox(width: 20),
+                    // Dropdown for selecting event type
                     Expanded(
                       child: DropdownButton<EventType>(
                         value: _eventType,
@@ -144,6 +160,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
+                     // Ticket price input, only allows numeric values
                     Expanded(
                       child: TextField(
                         controller: _ticketPriceController,
@@ -158,6 +175,7 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                   ],
                 ),
                 const SizedBox(height: 30),
+                 // Save button to trigger event saving
                 ElevatedButton.icon(
                   onPressed: _eventSave,
                   label: Text('Add Event',

@@ -5,6 +5,8 @@ import 'package:uni_pulse/Screens/users/user_home_page.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// AuthScreen is the main login interface.
+/// It allows both users and organisations to log in using their credentials
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -15,11 +17,13 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  // Text controllers to control email and password input
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
+  /// Displays an error dialog with the provided [message]
   void showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -37,17 +41,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ),
     );
   }
-
+  
+  ///Handles user authentication
+  ///Uses the [accountsProvider] to validate login details
+  ///Redirects user to either the organisation or user homepage upon success.
   void handleAuth(WidgetRef ref) async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
+    // Validate input fields
     if (email.isEmpty || password.isEmpty) {
       showErrorDialog("All fields are required.");
       return;
     }
 
     try {
+      // Attempt to authenticate using the provider
       final account = await ref
           .read(accountsProvider.notifier)
           .authenticate(email, password);
@@ -55,23 +64,29 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (account != null) {
         Navigator.pop(context);
         if (account.isOrganisation) {
+          // Redirect to organisation homepage
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (ctx) => OrgHomePage()),
           );
         } else {
+          //Redirect to user homepage
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (ctx) => HomePage()),
           );
         }
       } else {
+        // Authentication failed
         showErrorDialog("Invalid credentials. Please try again.");
       }
     } catch (e) {
+      // Catch any unexpected errors
       showErrorDialog("An error occurred during login. Please try again.");
       debugPrint('Error during login: $e');
     }
   }
-
+  
+  /// Builds the login UI.
+  /// Contains fields for email and password, and a login button.
   @override
   Widget build(BuildContext context) {
     return Scaffold(

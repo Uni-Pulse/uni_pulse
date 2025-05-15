@@ -4,7 +4,8 @@ import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:uni_pulse/Screens/initializing/login.dart';
-
+///Registration is the UI for new user registration
+///Users must fill out their personal information to tegister a new account
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -25,10 +26,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+  // Flag to determine whether registering as organisation or individual
   bool isOrganisation = false;
 
+  // Holds the selected date of birth
   DateTime? _selectedDate;
 
+  /// Opens a date picker and sets the selected date in the _dobController
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = (await showDatePicker(
       context: context,
@@ -78,7 +82,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       return;
     }
-
+    // Check if passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Passwords do not match")),
@@ -86,6 +90,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    // Attempt to register via provider
     final String? errorMessage =
         await ref.read(accountsProvider.notifier).registerUser(
               _firstNameController.text.trim(),
@@ -97,6 +102,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               isOrganisation,
               _usernameController.text.trim(),
             );
+    // Show result to the user
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration failed: $errorMessage")),
@@ -106,11 +112,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Registration Successful!")),
       );
+      // Redirect to login screen after successful registration
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => const AuthScreen())); //_registerUser,
     }
   }
 
+  /// Builds the registration form UI with all required input fields
   @override
   Widget build(BuildContext context) {
     return Scaffold(

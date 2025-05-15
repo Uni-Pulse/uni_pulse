@@ -4,6 +4,8 @@ import 'package:uni_pulse/Screens/profile_screen.dart';
 //import 'package:shop_app_flutter/cart_page.dart';
 //import 'package:shop_app_flutter/product_list.dart';
 
+// This is the home page for organisation users.
+// It contains two main screens: one for listing and another for the profile page.
 class OrgHomePage extends StatefulWidget {
   const OrgHomePage({super.key});
 
@@ -12,14 +14,18 @@ class OrgHomePage extends StatefulWidget {
 }
 
 class _OrgHomePageState extends State<OrgHomePage> {
+  // Holds the index of the currently selected bottom navigation item
   int currentPage = 0;
 
+  // List of widgets representing the different screens the user can switch betwee
   List<Widget> pages = [OrgListEvents(), ProfileScreen()];
 
+  /// Builds the UI of the home screen, including page switching and bottom navigation bar
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      // Displays the selected page based on currentPage index
       body: IndexedStack(
         index: currentPage,
         children: pages,
