@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart';
 // import 'package:path_provider/path_provider.dart' as syspaths;
 // import 'package:path/path.dart' as path;
 import 'package:uni_pulse/Models/acconts.dart';
@@ -124,6 +125,7 @@ final eventsProvider = StateNotifierProvider<EventNotifier, List<EventData>>(
 
 //Notifier class to manage user and organisation accounts
 class AccountNotifier extends StateNotifier<List<AccountData>> {
+
   AccountNotifier()
       : super([
           // Dummy users (for testing or development)
@@ -134,7 +136,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
               email: 'user',
               isOrganisation: false,
               phoneNum: 54321,
-              dob: DateTime(2005, 05, 12)),
+              dob: DateTime(2005, 05, 12),
+              favouriteEvents: []),
           AccountData(
               userName: 'org',
               firstName: 'org',
@@ -142,13 +145,32 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
               email: 'org',
               isOrganisation: true,
               phoneNum: 54321,
-              dob: DateTime(2005, 05, 12)),
+              dob: DateTime(2005, 05, 12), 
+              favouriteEvents: []),
+    
         ]);
+
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
+
   
   /// Updates user data in Firestore and local state
+
+  Future<void> addFavouriteEvent(EventData event) async{
+    if (state == null) return;
+    try{
+
+      await firestore.collection('users').doc(currentUser!.email).update({
+        'favouriteEvents': currentUser!.favouriteEvents.map((e) => e.toMap()).toList(),
+      });
+    }catch (e) {
+      debugPrint('Error adding event to favourites: $e');
+    }
+  
+  }
+
+>>
   Future<void> updateUser({
     required String firstName,
     required String lastName,
@@ -156,6 +178,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     required String phoneNum,
     required bool isOrganisation,
     required String userName,
+
   }) async {
     try {
       // Get the current user's ID
@@ -181,7 +204,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           email: email,
           phoneNum: int.parse(phoneNum),
           isOrganisation: isOrganisation,
-          dob: currentUser!.dob, // Keep the existing DOB
+          dob: currentUser!.dob,
+          favouriteEvents: currentUser!.favouriteEvents // Keep the existing DOB
         );
       }
 
@@ -200,6 +224,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
   AccountData? currentUser; // To store the currently logged-in user
   Future<AccountData?> authenticate(String email, String password) async {
+
     try {
       // Authenticate the user with Firebase Authentication
       final userCredential = await auth.signInWithEmailAndPassword(
@@ -228,6 +253,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           lastName: data['lastName'] as String,
           phoneNum: data['phoneNum'] as int,
           dob: DateTime.parse(data['dob'] as String),
+          favouriteEvents: data['favouriteEvents'] as List<EventData>
         );
 
         currentUser = loggedInUser;
@@ -246,6 +272,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
             lastName: '',
             phoneNum: data['phoneNumber'] as int,
             dob: null,
+            favouriteEvents: data['favouriteEvents'] as List<EventData>
           );
           currentUser = loggedInOrg;
           return loggedInOrg;
@@ -303,6 +330,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         // password: password,
         dob: dob,
         isOrganisation: isOrganisation,
+        favouriteEvents: [], // Initialize with an empty list
       );
 
       // Save the account to Firestore
@@ -352,11 +380,14 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
               '', // Assuming username is stored in Firestore
           email: data['email'] as String? ?? '',
           // password: data['password'] as String,
+
           isOrganisation: data['isOrganisation'] as bool? ?? false,
           firstName: data['firstName'] as String? ?? '',
           lastName: data['lastName'] as String? ?? '',
           phoneNum: data['phoneNum'] as int? ?? 0,
           dob: data['dob'] != null ? DateTime.tryParse(data['dob']) : null,
+          favouriteEvents: [],
+
         );
       }).toList();
 
@@ -422,7 +453,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           firstName: data['orgName'] as String,
           lastName: '', // Assuming no last name for organisations
           phoneNum: data['phoneNumber'] as int,
-          dob: null, // Assuming no DOB for organisations
+          dob: null,
+          favouriteEvents: data['favouriteEvents'] // Assuming no DOB for organisations
         );
       }).toList();
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:uni_pulse/Screens/initializing/login.dart';
+import 'package:uni_pulse/Screens/initializing/utils.dart';
+
 ///Registration is the UI for new user registration
 ///Users must fill out their personal information to tegister a new account
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -16,6 +19,15 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+
+Uint8List? _image;
+void selectImage() async{
+  Uint8List img = await pickImage(ImageSource.gallery);
+  setState(() {
+    _image = img;
+  });
+}
+ 
   // final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -130,8 +142,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           // key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
+              Center(
+                child: Stack(
+                  children: [
+                    _image != null ?
+                         CircleAvatar(
+                            radius: 65,
+                            backgroundImage: MemoryImage(_image!),
+                          )
+                        : const CircleAvatar(
+                            radius: 65,
+                            backgroundImage: NetworkImage(
+                                'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
+                          ),
+                    Positioned(
+                      child: IconButton(
+                        onPressed: selectImage,
+                        icon: const Icon(Icons.add_a_photo),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(labelText: "Username"),
@@ -145,6 +182,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: "First Name"),
@@ -155,6 +195,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(labelText: "Last Name"),
@@ -164,6 +207,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   }
                   return null;
                 },
+              ),
+              SizedBox(
+                height: 20,
               ),
               TextFormField(
                 controller: _phoneNumberController,
@@ -179,6 +225,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: "Email"),
@@ -193,6 +242,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: "Password"),
@@ -203,6 +255,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   }
                   return null;
                 },
+              ),
+              SizedBox(
+                height: 20,
               ),
               TextFormField(
                 controller: _confirmPasswordController,
@@ -216,6 +271,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               TextFormField(
                 controller: _dobController,
                 decoration: const InputDecoration(labelText: "Date Of Birth"),
@@ -228,11 +286,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
+              SizedBox(
+                height: 20,
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveAccount,
                 child: const Text("Register"),
               ),
+              
             ],
           ),
         ),

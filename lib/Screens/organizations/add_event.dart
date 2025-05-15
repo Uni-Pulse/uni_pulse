@@ -6,6 +6,8 @@ import 'package:uni_pulse/Models/events.dart';
 import 'package:flutter/services.dart'; // used to only allow numeric inputs in the ticket price
 
 import 'package:uni_pulse/Providers/events_provider.dart';
+import 'package:uni_pulse/Screens/initializing/utils.dart';
+
 
 // Formatter to display dates in MM/DD/YYYY format
 final formatter = DateFormat.yMd();
@@ -22,7 +24,18 @@ class AddEventScreen extends ConsumerStatefulWidget {
 }
 
 class _AddEventState extends ConsumerState<AddEventScreen> {
-  // Controllers for input fields
+
+
+Uint8List? _image;
+void selectImage() async{
+  Uint8List img = await pickImage(ImageSource.gallery);
+  setState(() {
+    _image = img;
+  });
+}
+  
+    // Controllers for input fields
+
   final _titleController = TextEditingController();
   // selected values
   DateTime? _selectedDate;
@@ -181,8 +194,44 @@ class _AddEventState extends ConsumerState<AddEventScreen> {
                   label: Text('Add Event',
                       style: Theme.of(context).textTheme.bodyLarge),
                   icon: const Icon(Icons.add),
-                )
-              ],
-            )));
+                ),
+                const SizedBox(height: 20),
+                Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        image: _image != null
+                            ? DecorationImage(
+                                image: MemoryImage(_image!),
+                                fit: BoxFit.cover,
+                              )
+                            : const DecorationImage(
+                                image: AssetImage('assets/logo.png'),
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                      child: IconButton(
+                        onPressed: selectImage,
+                        icon: const Icon(Icons.add_a_photo),
+                      ),
+                    ),
+                  ],
+                ),
+
+                    Positioned(
+                      child: IconButton(
+                        onPressed: selectImage,
+                        icon: const Icon(Icons.add_a_photo),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+                );
   }
 }

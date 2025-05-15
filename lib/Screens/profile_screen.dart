@@ -1,53 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+
   ConsumerState<ProfileScreen> createState() {
     return _ProfileScreenState();
   }
-}
 
+}
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  late Future<dynamic> currentUserFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    currentUserFuture =
-        Future.value(ref.read(accountsProvider.notifier).currentUser);
-  }
+  late TextEditingController _nameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
 
   String _name = '';
   String _lastname = '';
   String _email = '';
   int _phonenum = 0;
+  String _profileImageUrl = '';
+  bool _isEditing = false;
+  File? _selectedImageFile;
+  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
+  List<String> _starredEvents = [];
+  late Future<dynamic> currentUserFuture;
 
-  final List<Map<String, String>> starredEvents = [
-    {
-      'title': 'Tech Networking Event',
-      'date': 'March 25, 2025',
-      'location': 'Building A'
-    },
-    {
-      'title': 'AI & ML Seminar',
-      'date': 'May 5, 2025',
-      'location': 'Library Hall'
-    },
-    {
-      'title': 'Career Fair',
-      'date': 'July 20, 2025',
-      'location': 'Main Auditorium'
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    currentUserFuture = Future.value(ref.read(accountsProvider.notifier).currentUser);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +118,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         initialValue: _phonenum.toString(),
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
+                          border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.phone,
                         onSaved: (value) => _lastname = value ?? '',
@@ -130,6 +126,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       SizedBox(height: 15),
 
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF660099),
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                        ),
                         onPressed: () async {
                           // Save the form data
                           if (_formKey.currentState?.validate() ?? false) {
@@ -183,17 +183,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       SizedBox(height: 10),
 
                       // Scrollable List of Starred Events
-                      ...starredEvents.map((event) => Card(
+                      ...currentUser.favouriteEvents.map((event) => Card(
                             elevation: 3,
                             margin: EdgeInsets.symmetric(vertical: 8),
                             child: ListTile(
                               leading:
                                   Icon(Icons.event, color: Color(0xFF0091DA)),
-                              title: Text(event['title']!,
+                              title: Text(event.eventName,
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
                               subtitle: Text(
-                                  '${event['date']} • ${event['location']}'),
+                                  '${event.date} • ${event.ticketPrice}'),
                             ),
                           )),
                     ],
@@ -203,5 +203,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             );
           }
         });
+
   }
 }
