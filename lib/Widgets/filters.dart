@@ -78,7 +78,7 @@ class FilterPageState extends State<FilterPage> {
             onPressed: () {
               Map<String, dynamic> filters = {
                 'date': selectedDate,
-                'organisation': selectedOrganisation,
+                'organisation': selectedOrganisation != null && selectedOrganisation!.isNotEmpty ? selectedOrganisation : null,
                 'price': {'min': minPrice, 'max': maxPrice},
                 'category': selectedCategory,
               };
