@@ -76,6 +76,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               _selectedDate!,
               isOrganisation,
               _usernameController.text.trim(),
+             [],
             );
 
     if (errorMessage != null) {

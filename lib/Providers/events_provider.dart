@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
+// import 'package:path/path.dart';
 // import 'package:path_provider/path_provider.dart' as syspaths;
 // import 'package:path/path.dart' as path;
 import 'package:uni_pulse/Models/acconts.dart';
@@ -15,7 +15,14 @@ class EventNotifier extends StateNotifier<List<EventData>> {
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  /// Deletes an event from Firestore and updates the local state
+  EventData? getEventByName(String name) {
+    try {
+      return state.firstWhere((event) => event.eventName == name);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> deleteEvent(EventData event) async {
     try {
       // Delete the event from Firestore
@@ -351,7 +358,8 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       String password,
       DateTime dob,
       bool isOrganisation,
-      String userName) async {
+      String userName,
+      List favouritevents) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,

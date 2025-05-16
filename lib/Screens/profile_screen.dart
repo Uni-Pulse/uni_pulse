@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:uni_pulse/Screens/initializing/start_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+// import 'package:table_calendar/table_calendar.dart';
+import 'package:uni_pulse/Screens/event_details.dart';
+// import 'package:uni_pulse/Models/events.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _lastNameController;
@@ -26,8 +32,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _email = '';
   int _phonenum = 0;
   bool _isEditing = false;
-  DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
+
+  // DateTime _selectedDay = DateTime.now();
+  // DateTime _focusedDay = DateTime.now();
+
   List<String> _starredEvents = [];
 
   @override
@@ -43,6 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _fetchUserData() async {
     final currentUser = FirebaseAuth.instance.currentUser;
+
     debugPrint('ProfileScreen: currentUser is ${currentUser?.uid ?? "null"}');
     // setState(() => _isLoading = true);
     if (currentUser == null) {
@@ -90,6 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
       try {
+
         final userUid = FirebaseAuth.instance.currentUser!.uid;
 
         await FirebaseFirestore.instance
@@ -119,15 +129,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _toggleStarredEvent(String eventName) {
-    setState(() {
-      if (_starredEvents.contains(eventName)) {
-        _starredEvents.remove(eventName);
-      } else {
-        _starredEvents.add(eventName);
-      }
-    });
-  }
+  // void _toggleStarredEvent(String eventName) {
+  //   setState(() {
+  //     if (_starredEvents.contains(eventName)) {
+  //       _starredEvents.remove(eventName);
+  //     } else {
+  //       _starredEvents.add(eventName);
+  //     }
+  //   });
+  // }
 
   Future<void> _deleteAccount() async {
     try {
@@ -187,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Details'),
+        title: Text('Profile Details', style: Theme.of(context).textTheme.titleLarge),
         backgroundColor: const Color(0xFF660099),
         actions: [
           IconButton(
@@ -210,6 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
+
                     if (_isEditing)
                       Positioned(
                         bottom: 0,
@@ -223,6 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
               TextFormField(
                 controller: _usernameController,
                 enabled: false,
@@ -279,6 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             .titleMedium, // Bigger text
                       ),
                       onPressed: _saveProfile,
+
                       child: Text(
                         'Save Profile',
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -310,6 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style:
                           ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       child: const Text('Delete Account'),
+
                     ),
                     const SizedBox(height: 30),
                   ],
@@ -317,30 +331,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text('Starred Events',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
+              Expanded(
+                child: _starredEvents.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No events found.',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount:
+                            _starredEvents.length, // Use filtered events here
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    // You need to fetch or construct the EventData object here.
+                                    // For demonstration, replace this with your actual event fetching logic.
+                                    // Example assumes you have a method getEventDataByName(String name)
+                                    final event = ref
+                                        .watch(eventsProvider.notifier)
+                                        .getEventByName(_starredEvents[index]);
+                                    if (event == null) {
+                                      return const Scaffold(
+                                        body: Center(
+                                            child: Text('Event not found')),
+                                      );
+                                    }
+                                    return EventDetailsScreen(event: event);
+                                  },
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              children: [
+                                Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      _starredEvents[index],
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(color: Colors.white),
+                                    ),
+                                    // You may add a subtitle if you have more event info
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
               for (var event in _starredEvents)
                 ListTile(
                   title: Text(event),
                   trailing: IconButton(
-                    icon: const Icon(Icons.star, color: Colors.amber),
-                    onPressed: () => _toggleStarredEvent(event),
-                  ),
+                      icon: const Icon(Icons.star, color: Colors.amber),
+                      onPressed: () => {} //_toggleStarredEvent(event),
+                      ),
                 ),
-              const SizedBox(height: 30),
-              const Text('Your Calendar',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              TableCalendar(
-                firstDay: DateTime.utc(2022, 01, 01),
-                lastDay: DateTime.utc(2025, 12, 31),
-                focusedDay: _focusedDay,
-                selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
-                },
-              ),
+
+              // const SizedBox(height: 30),
+              // const Text('Your Calendar',
+              //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              // const SizedBox(height: 10),
+              // TableCalendar(
+              //   firstDay: DateTime.utc(2022, 01, 01),
+              //   lastDay: DateTime.utc(2025, 12, 31),
+              //   focusedDay: _focusedDay,
+              //   selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+              //   onDaySelected: (selectedDay, focusedDay) {
+              //     setState(() {
+              //       _selectedDay = selectedDay;
+              //       _focusedDay = focusedDay;
+              //     });
+              //   },
+              // ),
+
               const SizedBox(height: 20),
             ],
           ),

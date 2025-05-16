@@ -18,11 +18,6 @@ class ListEvents extends ConsumerWidget {
     final eventsInfo = ref.watch(eventsProvider);
     // Use the provider to get events
 
-    const border = OutlineInputBorder(
-      borderSide: BorderSide(color: Color.fromRGBO(225, 225, 225, 1)),
-      borderRadius: BorderRadius.horizontal(left: Radius.circular(50)),
-    );
-
     return SafeArea(
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
