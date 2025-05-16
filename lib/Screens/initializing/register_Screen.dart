@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
 
+
 ///Registration is the UI for new user registration
 ///Users must fill out their personal information to register a new account
 class RegisterScreen extends ConsumerStatefulWidget {

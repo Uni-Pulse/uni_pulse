@@ -23,74 +23,96 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _usernameController;
   // bool _isLoading = true;
 
-  String _username = '';
+  // Variables for form fields
   String _name = '';
   String _lastname = '';
   String _email = '';
   int _phonenum = 0;
+  String _username = '';
   bool _isEditing = false;
 
   // DateTime _selectedDay = DateTime.now();
   // DateTime _focusedDay = DateTime.now();
 
-  List<String> _starredEvents = [];
+  List<String> _favouriteEvents = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _usernameController = TextEditingController();
-    _nameController = TextEditingController();
-    _lastNameController = TextEditingController();
-    _emailController = TextEditingController();
-    _phoneController = TextEditingController();
-    _fetchUserData();
-  }
-
-  Future<void> _fetchUserData() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    debugPrint('ProfileScreen: currentUser is ${currentUser?.uid ?? "null"}');
-    // setState(() => _isLoading = true);
-    if (currentUser == null) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      final retryUser = FirebaseAuth.instance.currentUser;
-      debugPrint('ProfileScreen: retryUser is ${retryUser?.uid ?? "null"}');
-      if (retryUser == null) {
-        // setState(() => _isLoading = false);
-        return;
-      }
-    }
-    if (currentUser == null) {
-      // setState(() => _isLoading = false);
-      return;
-    }
-
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser.uid)
-        .get();
+  void _listenToFavouriteEvents() {
+  final userUid = FirebaseAuth.instance.currentUser!.uid;
+  FirebaseFirestore.instance
+      .collection('users')
+      .doc(userUid)
+      .snapshots()
+      .listen((doc) {
     final data = doc.data();
     if (data != null) {
       setState(() {
-        _username = data['username'] ?? '';
-        _name = data['firstName'] ?? '';
-        _lastname = data['lastName'] ?? '';
-        _email = data['email'] ?? '';
-        _phonenum = data['phoneNum'] is int
-            ? data['phoneNum']
-            : int.tryParse(data['phoneNum']?.toString() ?? '') ?? 0;
-        _starredEvents = List<String>.from(data['starredEvents'] ?? []);
-        _usernameController.text = _username;
-        _nameController.text = _name;
-        _lastNameController.text = _lastname;
-        _emailController.text = _email;
-        _phoneController.text = _phonenum.toString();
-        // _isLoading = false;
+        _favouriteEvents = (data['favouriteEvents'] as List<dynamic>? ?? [])
+            .map((e) => e.toString())
+            .toList();
       });
+    }
+  });
+}
+
+
+  @override
+void initState() {
+  super.initState();
+  _usernameController = TextEditingController();
+  _nameController = TextEditingController();
+  _lastNameController = TextEditingController();
+  _emailController = TextEditingController();
+  _phoneController = TextEditingController();
+  _listenToFavouriteEvents();
+
+  _getUserOrOrgInfo().then((data) {
+    setState(() {
+      _usernameController.text = data['username'] ?? 'N/A';
+      _nameController.text = data['firstName'] ?? 'N/A';
+      _lastNameController.text = data['lastName'] ?? 'N/A';
+      _emailController.text = data['email'] ?? 'N/A';
+      _phoneController.text = (data['phoneNum'] ?? 'N/A').toString();
+      _favouriteEvents = (data['favouriteEvents'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      // ...set other fields as needed
+       debugPrint('Loaded favouriteEvents: $_favouriteEvents');
+    });
+  });
+}
+
+Future<Map<String, dynamic>> _getUserOrOrgInfo() async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  Map<String, dynamic> userData = {};
+  bool isOrganisation = false;
+
+  if (currentUser != null) {
+    // Try users collection
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
+
+    if (userDoc.exists && userDoc.data() != null) {
+      userData = userDoc.data()!;
+      isOrganisation = (userData['isOrganisation'] as bool?) ?? false;
     } else {
-      // setState(() => _isLoading = false);
+      // Try organisations collection
+      final orgDoc = await FirebaseFirestore.instance
+          .collection('organisations')
+          .doc(currentUser.uid)
+          .get();
+      if (orgDoc.exists && orgDoc.data() != null) {
+        userData = orgDoc.data()!;
+        isOrganisation = (userData['isOrganisation'] as bool?) ?? true;
+      }
     }
   }
+
+  // Add isOrganisation and loggedIn to the returned map
+  userData['isOrganisation'] = isOrganisation;
+  userData['loggedIn'] = currentUser != null;
+  return userData;
+}
+ 
 
   Future<void> _saveProfile() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -107,7 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           'lastName': _lastname,
           'email': _email,
           'phoneNum': _phonenum,
-          'starredEvents': _starredEvents,
+          'favouriteEvents': _favouriteEvents,
         });
 
         setState(() {
@@ -126,15 +148,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  // void _toggleStarredEvent(String eventName) {
-  //   setState(() {
-  //     if (_starredEvents.contains(eventName)) {
-  //       _starredEvents.remove(eventName);
-  //     } else {
-  //       _starredEvents.add(eventName);
-  //     }
-  //   });
-  // }
 
   Future<void> _deleteAccount() async {
   try {
@@ -197,13 +210,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile Details', style: Theme.of(context).textTheme.titleLarge),
-        backgroundColor: const Color(0xFF660099),
         actions: [
           IconButton(
             icon: Icon(_isEditing ? Icons.close : Icons.edit),
@@ -358,88 +369,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(height: 30),
                   ],
                 ),
-              const Text('Starred Events',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Expanded(
-                child: _starredEvents.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No events found.',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount:
-                            _starredEvents.length, // Use filtered events here
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    // You need to fetch or construct the EventData object here.
-                                    // For demonstration, replace this with your actual event fetching logic.
-                                    // Example assumes you have a method getEventDataByName(String name)
-                                    final event = ref
-                                        .watch(eventsProvider.notifier)
-                                        .getEventByName(_starredEvents[index]);
-                                    if (event == null) {
-                                      return const Scaffold(
-                                        body: Center(
-                                            child: Text('Event not found')),
-                                      );
-                                    }
-                                    return EventDetailsScreen(event: event);
-                                  },
-                                ),
-                              );
-                            },
-                            child: Stack(
-                              children: [
-                                Card(
-                                  child: ListTile(
-                                    title: Text(
-                                      _starredEvents[index],
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(color: Colors.white),
-                                    ),
-                                    // You may add a subtitle if you have more event info
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-              ),
-              for (var event in _starredEvents)
-                ListTile(
-                  title: Text(event),
-                  trailing: IconButton(
-                      icon: const Icon(Icons.star, color: Colors.amber),
-                      onPressed: () => {} //_toggleStarredEvent(event),
-                      ),
-                ),
 
-              // const SizedBox(height: 30),
-              // const Text('Your Calendar',
-              //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              // const SizedBox(height: 10),
-              // TableCalendar(
-              //   firstDay: DateTime.utc(2022, 01, 01),
-              //   lastDay: DateTime.utc(2025, 12, 31),
-              //   focusedDay: _focusedDay,
-              //   selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-              //   onDaySelected: (selectedDay, focusedDay) {
-              //     setState(() {
-              //       _selectedDay = selectedDay;
-              //       _focusedDay = focusedDay;
-              //     });
-              //   },
-              // ),
+              const Text('Favourite Events',
+    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+const SizedBox(height: 10),
+_favouriteEvents.isEmpty
+    ? Center(
+        child: Text(
+          'No events found.',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+      )
+    : ListView.builder(
+        shrinkWrap: true, // Important: allows ListView inside another ListView
+        physics: NeverScrollableScrollPhysics(), // Prevents nested scrolling
+        itemCount: _favouriteEvents.length,
+        itemBuilder: (context, index) {
+          final event = ref
+              .watch(eventsProvider.notifier)
+              .getEventByName(_favouriteEvents[index]);
+          return Card(
+            child: ListTile(
+            
+              title: Text(
+                event?.eventName ?? _favouriteEvents[index],
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              subtitle: event != null
+                  ? Text('${event.date.toLocal()} • ${event.eventType}')
+                  : null,
+              onTap: event == null
+                  ? null
+                  : () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EventDetailsScreen(event: event),
+                        ),
+                      );
+                    },
+            ),
+          );
+        },
+      ),
 
               const SizedBox(height: 20),
             ],

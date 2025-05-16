@@ -4,7 +4,7 @@ import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
-import 'package:uni_pulse/Screens/initializing/utils.dart';
+import 'package:uni_pulse/Widgets/utils.dart';
 
 class RegisterOrganisationScreen extends ConsumerStatefulWidget {
   const RegisterOrganisationScreen({super.key});
@@ -63,6 +63,7 @@ class _RegisterOrganisationScreenState
               password: _passwordController.text.trim(),
               phoneNumber:int.tryParse(_phoneNumberController.text) ?? 0,
               userName: _usernameController.text.trim(),
+              favouriteEvents: [],
             );
 
     if (errorMessage != null) {
@@ -93,28 +94,28 @@ class _RegisterOrganisationScreenState
           key: _formKey,
           child: ListView(
             children: [
-              Center(
-                child: Stack(
-                  children: [
-                    _image != null
-                        ? CircleAvatar(
-                            radius: 65,
-                            backgroundImage: MemoryImage(_image!),
-                          )
-                        : const CircleAvatar(
-                            radius: 65,
-                            backgroundImage: NetworkImage(
-                                'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
-                          ),
-                    Positioned(
-                      child: IconButton(
-                        onPressed: selectImage,
-                        icon: const Icon(Icons.add_a_photo),
-                      ),
-                    )
-                  ],
-                ),
-              ),
+              // Center( // cant use image picker without setting up billing in database
+              //   child: Stack(
+              //     children: [
+              //       _image != null
+              //           ? CircleAvatar(
+              //               radius: 65,
+              //               backgroundImage: MemoryImage(_image!),
+              //             )
+              //           : const CircleAvatar(
+              //               radius: 65,
+              //               backgroundImage: NetworkImage(
+              //                   'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
+              //             ),
+              //       Positioned(
+              //         child: IconButton(
+              //           onPressed: selectImage,
+              //           icon: const Icon(Icons.add_a_photo),
+              //         ),
+              //       )
+              //     ],
+              //   ),
+              // ),
               SizedBox(
                 height: 20,
               ),

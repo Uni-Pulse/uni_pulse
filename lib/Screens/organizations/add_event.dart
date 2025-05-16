@@ -6,8 +6,7 @@ import 'package:uni_pulse/Models/events.dart';
 import 'package:flutter/services.dart'; // used to only allow numeric inputs in the ticket price
 
 import 'package:uni_pulse/Providers/events_provider.dart';
-import 'package:uni_pulse/Screens/initializing/utils.dart';
-import 'package:image_picker/image_picker.dart';
+
 
 
 // Formatter to display dates in MM/DD/YYYY format
@@ -27,13 +26,13 @@ class AddEventScreen extends ConsumerStatefulWidget {
 class _AddEventState extends ConsumerState<AddEventScreen> {
 
 
-Uint8List? _image;
-void selectImage() async{
-  Uint8List img = await pickImage(ImageSource.gallery);
-  setState(() {
-    _image = img;
-  });
-}
+// Uint8List? _image; // Uncomment this line to use image picker
+// void selectImage() async{
+//   Uint8List img = await pickImage(ImageSource.gallery);
+//   setState(() {
+//     _image = img;
+//   });
+// }
   
     // Controllers for input fields
 
@@ -197,41 +196,35 @@ void selectImage() async{
                   icon: const Icon(Icons.add),
                 ),
                 const SizedBox(height: 20),
-                Stack(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        image: _image != null
-                            ? DecorationImage(
-                                image: MemoryImage(_image!),
-                                fit: BoxFit.cover,
-                              )
-                            : const DecorationImage(
-                                image: AssetImage('assets/logo.png'),
-                                fit: BoxFit.cover,
-                              ),
-                      ),
-                    ),
-                    Positioned(
-                      child: IconButton(
-                        onPressed: selectImage,
-                        icon: const Icon(Icons.add_a_photo),
-                      ),
-                    ),
-                  ],
-                ),
 
-                    Positioned(
-                      child: IconButton(
-                        onPressed: selectImage,
-                        icon: const Icon(Icons.add_a_photo),
-                      ),
-                    ),
-                  ],
-                ),
+                // Stack( // Uncomment this section to add an image picker, couldnt save image to current database without setting up billing
+                //   children: [
+                //     Container(
+                //       width: double.infinity,
+                //       height: 200,
+                //       decoration: BoxDecoration(
+                //         color: Colors.grey[300],
+                //         image: _image != null
+                //             ? DecorationImage(
+                //                 image: MemoryImage(_image!),
+                //                 fit: BoxFit.cover,
+                //               )
+                //             : const DecorationImage(
+                //                 image: AssetImage('assets/logo.png'),
+                //                 fit: BoxFit.cover,
+                //               ),
+                //       ),
+                //     ),
+                //     Positioned(
+                //       child: IconButton(
+                //         onPressed: selectImage,
+                //         icon: const Icon(Icons.add_a_photo),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+
+                ]),
         ),
                 );
   }
