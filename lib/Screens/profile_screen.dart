@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-// import 'package:table_calendar/table_calendar.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:uni_pulse/Screens/event_details.dart';
-// import 'package:uni_pulse/Models/events.dart';
+import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Screens/initializing/start_screen.dart';
 
@@ -141,58 +139,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // }
 
   Future<void> _deleteAccount() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-      // Delete user document from Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .delete();
+    // Prompt for password
+    String? password = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          title: const Text('Re-authenticate'),
+          content: TextField(
+            controller: controller,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Enter your password'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text),
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+    if (password == null || password.isEmpty) return;
 
-      // Delete user from Firebase Authentication
-      await user.delete();
+    // Re-authenticate
+    final cred = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+    await user.reauthenticateWithCredential(cred);
 
-      // Optionally, sign out and navigate to login screen
-      await FirebaseAuth.instance.signOut();
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (ctx) => const StartScreen()),
-          (route) => false,
-        ); // or your AuthScreen
-      }
-    } catch (e) {
-      debugPrint('Error deleting account: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete account: $e')),
+    // Delete user document from Firestore
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+
+    // Delete user from Firebase Authentication
+    await user.delete();
+
+    // Sign out and navigate to StartScreen
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (ctx) => const StartScreen()),
+        (route) => false,
       );
     }
+  } catch (e) {
+    debugPrint('Error deleting account: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to delete account: $e')),
+    );
   }
+}
 
-  // void _confirmDeleteAccount() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Delete Account'),
-  //       content: const Text(
-  //           'Are you sure you want to delete your account? This action cannot be undone.'),
-  //       actions: [
-  //         TextButton(
-  //           child: const Text('Cancel'),
-  //           onPressed: () => Navigator.of(context).pop(),
-  //         ),
-  //         TextButton(
-  //           child: const Text('Delete', style: TextStyle(color: Colors.red)),
-  //           onPressed: () {
-  //             Navigator.of(context).pop();
-  //             _deleteAccount();
-  //           },
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
