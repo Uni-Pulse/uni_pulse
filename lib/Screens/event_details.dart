@@ -7,27 +7,30 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 
-// ...existing imports...
-
+// EventDetailsScreen displays details for a specific event
 class EventDetailsScreen extends ConsumerWidget {
   const EventDetailsScreen({super.key, required this.event});
 
-  final EventData event;
+  final EventData event; // Event data passed to the screen
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Format the event date to a readable string
     final formattedDate =
         DateFormat('EEEE, MMMM d, yyyy – h:mm a').format(event.date);
+
+    // Convert ticket price, showing "Free" if zero
     final ticketPrice =
         event.ticketPrice == '0' ? 'Free' : '£${event.ticketPrice}';
 
+    // Helper function to retrieve logged-in user or organisation info
     Future<Map<String, dynamic>> _getUserOrOrgInfo() async {
       final currentUser = FirebaseAuth.instance.currentUser;
       String username = 'Unknown User';
       bool isOrganisation = false;
 
       if (currentUser != null) {
-        // Try users collection
+        // Try retrieving user data from the 'users' collection
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(currentUser.uid)
@@ -38,7 +41,7 @@ class EventDetailsScreen extends ConsumerWidget {
           username = (userData['username'] as String?) ?? 'Unknown User';
           isOrganisation = (userData['isOrganisation'] as bool?) ?? false;
         } else {
-          // Try organisations collection
+          // If not found, try the 'organisations' collection
           final orgDoc = await FirebaseFirestore.instance
               .collection('organisations')
               .doc(currentUser.uid)
@@ -50,6 +53,7 @@ class EventDetailsScreen extends ConsumerWidget {
           }
         }
       }
+
       return {
         'username': username,
         'isOrganisation': isOrganisation,
@@ -57,8 +61,11 @@ class EventDetailsScreen extends ConsumerWidget {
       };
     }
 
+    // Navigates to the chatroom if the user is authenticated
     void _joinChatRoom(BuildContext context) async {
       final info = await _getUserOrOrgInfo();
+
+      // If not logged in, show error message
       if (!info['loggedIn']) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -67,6 +74,8 @@ class EventDetailsScreen extends ConsumerWidget {
         );
         return;
       }
+
+      // Navigate to the ChatRoom screen
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -83,30 +92,30 @@ class EventDetailsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title:  Text('Event Details', style: Theme.of(context).textTheme.titleLarge),
+        title: Text('Event Details', style: Theme.of(context).textTheme.titleLarge),
         elevation: 0,
         actions: [
-            IconButton(
-              icon: const Icon(Icons.star_border_outlined),
-              onPressed: () async {
-                try{
-                  await ref.read(accountsProvider.notifier).addFavouriteEvent(event);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Event added to favourites')),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error adding event to favourites')),
-                  );
-                }
-              },
-            
-            ),
-          ],
+          // Add to Favourites icon button
+          IconButton(
+            icon: const Icon(Icons.star_border_outlined),
+            onPressed: () async {
+              try {
+                await ref.read(accountsProvider.notifier).addFavouriteEvent(event);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Event added to favourites')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error adding event to favourites')),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
-          // Hero Banner
+          // Event banner with gradient and title
           Container(
             height: 200,
             width: double.infinity,
@@ -139,23 +148,23 @@ class EventDetailsScreen extends ConsumerWidget {
             ),
           ),
 
-          // Main Content
+          // Responsive main content
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   bool isWide = constraints.maxWidth > 700;
+
                   return isWide
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Description Box (Sidebar)
+                            // Sidebar description for wide layout
                             Container(
                               width: 300,
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                             
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
@@ -173,7 +182,6 @@ class EventDetailsScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                     
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -189,7 +197,7 @@ class EventDetailsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(width: 20),
 
-                            // Event Details
+                            // Event details and chatroom button
                             Expanded(
                               child: SingleChildScrollView(
                                 child: Column(
@@ -207,8 +215,7 @@ class EventDetailsScreen extends ConsumerWidget {
                                     Center(
                                       child: ElevatedButton.icon(
                                         onPressed: () => _joinChatRoom(context),
-                                        icon: const Icon(
-                                            Icons.chat_bubble_outline),
+                                        icon: const Icon(Icons.chat_bubble_outline),
                                         label: const Text('Join Chat Room'),
                                         style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
@@ -228,10 +235,10 @@ class EventDetailsScreen extends ConsumerWidget {
                           ],
                         )
                       : SingleChildScrollView(
+                          // Mobile layout with full-width description box
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Description box in full-width mode for mobile
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(16),
@@ -250,19 +257,17 @@ class EventDetailsScreen extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    
                                     const Text(
                                       'About This Event',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                     
                                       ),
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
                                       event.description,
-                                      style:Theme.of(context)
+                                      style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
                                           ?.copyWith(height: 1.5),
@@ -270,20 +275,22 @@ class EventDetailsScreen extends ConsumerWidget {
                                   ],
                                 ),
                               ),
+                              // Detail cards for mobile
                               _buildDetailCard(context, Icons.calendar_today,
                                   'Date & Time', formattedDate),
                               _buildDetailCard(context, Icons.monetization_on,
                                   'Ticket Price', ticketPrice),
-                              _buildDetailCard(context, Icons.category, 'Event Type',
-                                  event.eventType.name),
-                              _buildDetailCard(context, Icons.apartment, 'Organisation',
-                                  event.organisation),
+                              _buildDetailCard(context, Icons.category,
+                                  'Event Type', event.eventType.name),
+                              _buildDetailCard(context, Icons.apartment,
+                                  'Organisation', event.organisation),
                               const SizedBox(height: 30),
                               Center(
                                 child: ElevatedButton.icon(
                                   onPressed: () => _joinChatRoom(context),
                                   icon: const Icon(Icons.chat_bubble_outline),
-                                  label:  Text('Join Chat Room', style: Theme.of(context).textTheme.bodyMedium),
+                                  label: Text('Join Chat Room',
+                                      style: Theme.of(context).textTheme.bodyMedium),
                                   style: ElevatedButton.styleFrom(
                                     iconColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(
@@ -307,7 +314,9 @@ class EventDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDetailCard(BuildContext context, IconData icon, String title, String value) {
+  // Widget builder for each event detail row with icon and label
+  Widget _buildDetailCard(
+      BuildContext context, IconData icon, String title, String value) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10),
       elevation: 3,
@@ -316,7 +325,8 @@ class EventDetailsScreen extends ConsumerWidget {
         leading: Icon(icon),
         title: Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+          style:
+              Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
         ),
         subtitle: Text(
           value,
