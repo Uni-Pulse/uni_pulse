@@ -87,8 +87,8 @@ class ListEvents extends ConsumerWidget {
                         //image: eventsInfo[index].image,
                         date: eventsInfo[index].date,
                         backgroundColor: index.isEven
-                            ? const Color.fromARGB(255, 96, 72, 99)
-                            : const Color.fromARGB(255, 97, 65, 105),
+                            ? const Color.fromARGB(255, 175, 126, 180)
+                            : const Color.fromARGB(255, 130, 78, 143),
                       ),
                     );
                   } else {

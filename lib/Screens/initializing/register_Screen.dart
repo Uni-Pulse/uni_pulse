@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:uni_pulse/Providers/events_provider.dart';
-import 'dart:typed_data';
-import 'package:image_picker/image_picker.dart';
-// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
-import 'package:uni_pulse/Screens/initializing/utils.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 ///Registration is the UI for new user registration
-///Users must fill out their personal information to tegister a new account
+///Users must fill out their personal information to register a new account
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -22,38 +15,12 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-
-Uint8List? _image;
-void selectImage() async{
-  Uint8List img = await pickImage(ImageSource.gallery);
-  setState(() {
-    _image = img;
-  });
-}
-
-
-Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
-  try {
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('profile_images')
-        .child('$uid.jpg');
-    await ref.putData(image);
-    return await ref.getDownloadURL();
-  } catch (e) {
-    debugPrint('Image upload error: $e');
-    return null;
-  }
-}
- 
-  // final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   // Flag to determine whether registering as organisation or individual
@@ -63,40 +30,20 @@ Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
   DateTime? _selectedDate;
 
   /// Opens a date picker and sets the selected date in the _dobController
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = (await showDatePicker(
+  void _pickDate() async {
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(1950),
+      firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-    ))!;
-    if (picked != _selectedDate) {
+    );
+    if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        _dobController.text =
-            "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+        _dobController.text = "${picked.day}/${picked.month}/${picked.year}";
       });
     }
   }
-
-  // Future<void> _registerUser() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     try {
-
-  //       // await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  //       //   email: _emailController.text.trim(),
-  //       //   password: _passwordController.text.trim(),
-  //       // );
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Registration Successful!")),
-  //       );
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("Error: ${e.toString()}")),
-  //       );
-  //     }
-  //   }
-  // }
 
   void _saveAccount() async {
     if (_firstNameController.text.isEmpty ||
@@ -106,60 +53,44 @@ Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty ||
         _usernameController.text.isEmpty ||
-        _dobController.text.isEmpty) {
+        _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
       );
       return;
     }
-    // Check if passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Passwords do not match")),
       );
       return;
     }
-    String? imageUrl;
-    // Attempt to register via provider
+    // 3. Register user, passing imageUrl if available
     final String? errorMessage =
         await ref.read(accountsProvider.notifier).registerUser(
               _firstNameController.text.trim(),
               _lastNameController.text.trim(),
-              _phoneNumberController.text.trim(),
+              int.tryParse(_phoneNumberController.text) ?? 0,
               _emailController.text.trim(),
               _passwordController.text.trim(),
               _selectedDate!,
               isOrganisation,
               _usernameController.text.trim(),
             );
-  
+
     if (errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration failed: $errorMessage")),
       );
       return;
     }
-  
-    // If registration is successful and an image is selected, upload the image
-    if (_image != null) {
-      //  need to get the current user's UID after registration.
-      // This assumes you have a way to get the UID, e.g., from FirebaseAuth.
-      // Replace 'currentUserUid' with the actual UID retrieval logic.
-      final currentUserUid = FirebaseAuth.instance.currentUser!.uid;
-      imageUrl = await _uploadProfileImage(_image!, currentUserUid);
-      // Now update Firestore with the imageUrl
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUserUid)
-          .update({'profileImageUrl': imageUrl});
-    }
-  
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Registration Successful!")),
     );
-    // Redirect to login screen after successful registration
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => const AuthScreen()));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (ctx) => const AuthScreen()),
+    );
   }
 
   /// Builds the registration form UI with all required input fields
@@ -168,34 +99,16 @@ Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title:  Text("Register", style: Theme.of(context).textTheme.titleLarge),
+        title: Text("Register", style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          // key: _formKey,
           child: ListView(
             children: [
               Center(
                 child: Stack(
-                  children: [
-                    _image != null ?
-                         CircleAvatar(
-                            radius: 65,
-                            backgroundImage: MemoryImage(_image!),
-                          )
-                        : const CircleAvatar(
-                            radius: 65,
-                            backgroundImage: NetworkImage(
-                                'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'),
-                          ),
-                    Positioned(
-                      child: IconButton(
-                        onPressed: selectImage,
-                        icon: const Icon(Icons.add_a_photo),
-                      ),
-                    )
-                  ],
+                  children: [],
                 ),
               ),
               SizedBox(
@@ -209,124 +122,59 @@ Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
                     return "Please enter a username";
                   }
                   if (value.length < 3) {
-                    return "Username must be at least 3 characters";
+                    return "Username must be at least 3 characters long";
                   }
                   return null;
                 },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: "First Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your first name";
-                  }
-                  return null;
-                },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(labelText: "Last Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your last name";
-                  }
-                  return null;
-                },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _phoneNumberController,
                 decoration: const InputDecoration(labelText: "Phone Number"),
                 keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your phone number";
-                  }
-                  if (!RegExp(r'^\+?\d{10,13}$').hasMatch(value)) {
-                    return "Please enter a valid phone number";
-                  }
-                  return null;
-                },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: "Email"),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter an email";
-                  }
-                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return "Please enter a valid email";
-                  }
-                  return null;
-                },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: "Password"),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.length < 6) {
-                    return "Password must be at least 6 characters";
-                  }
-                  return null;
-                },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration:
-                    const InputDecoration(labelText: "Confirm Password"),
+                decoration: const InputDecoration(labelText: "Confirm Password"),
                 obscureText: true,
-                validator: (value) {
-                  if (value != _passwordController.text) {
-                    return "Passwords do not match";
-                  }
-                  return null;
-                },
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _dobController,
-                decoration: const InputDecoration(labelText: "Date Of Birth"),
                 readOnly: true,
-                onTap: () => _selectDate(context),
-                validator: (value) {
-                  if (_selectedDate == null) {
-                    return "Please select a date of birth";
-                  }
-                  return null;
-                },
+                decoration: const InputDecoration(labelText: "Date of Birth"),
+                onTap: _pickDate,
               ),
-              SizedBox(
-                height: 20,
-              ),
-              const SizedBox(height: 20),
+              SizedBox(height: 10),
+              
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveAccount,
-                child:  Text("Register", style: Theme.of(context).textTheme.bodyMedium),
+                child: const Text("Register"),
               ),
-              
             ],
           ),
         ),
@@ -334,5 +182,3 @@ Future<String?> _uploadProfileImage(Uint8List image, String uid) async {
     );
   }
 }
-
-// test commit

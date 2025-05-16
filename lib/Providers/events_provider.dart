@@ -8,12 +8,14 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:flutter/material.dart';
 // Import for firstWhereOrNull
 import 'package:firebase_auth/firebase_auth.dart';
+
 // Notifier class to manage events using Riverpod state management
 class EventNotifier extends StateNotifier<List<EventData>> {
   EventNotifier() : super(const []);
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  /// Deletes an event from Firestore and updates the local state 
+
+  /// Deletes an event from Firestore and updates the local state
   Future<void> deleteEvent(EventData event) async {
     try {
       // Delete the event from Firestore
@@ -125,7 +127,6 @@ final eventsProvider = StateNotifierProvider<EventNotifier, List<EventData>>(
 
 //Notifier class to manage user and organisation accounts
 class AccountNotifier extends StateNotifier<List<AccountData>> {
-
   AccountNotifier()
       : super([
           // Dummy users (for testing or development)
@@ -145,28 +146,68 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
               email: 'org',
               isOrganisation: true,
               phoneNum: 54321,
-              dob: DateTime(2005, 05, 12), 
+              dob: DateTime(2005, 05, 12),
               favouriteEvents: []),
-    
         ]);
-
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  
   /// Updates user data in Firestore and local state
 
-  Future<void> addFavouriteEvent(EventData event) async{
-    try{
+    Future<void> addFavouriteEvent(EventData event) async {
+    final currentUser = this.currentUser; // Get the current user
+    final firebaseUser = auth.currentUser; // Get the Firebase Auth user
 
-      await firestore.collection('users').doc(currentUser!.email).update({
-        'favouriteEvents': currentUser!.favouriteEvents.map((e) => e.toMap()).toList(),
-      });
-    }catch (e) {
-      debugPrint('Error adding event to favourites: $e');
+    // Ensure we have both the local AccountData and the Firebase Auth user
+    if (currentUser == null || firebaseUser == null) {
+      debugPrint('Error adding favourite: No user logged in.');
+      return; // Exit if no user is logged in
     }
-  
+
+    // Add the event to the local currentUser's favourites if it's not already there
+    if (!currentUser.favouriteEvents.contains(event)) {
+        currentUser.favouriteEvents.add(event); // Add to the list
+    } else {
+        debugPrint('Event ${event.eventName} is already in favourites.');
+        return; // Exit if already a favourite
+    }
+
+
+    try {
+      // Update the user's document in Firestore using the UID
+      await firestore.collection('users').doc(firebaseUser.uid).update({
+        // Convert the list of EventData objects to a list of Maps
+        'favouriteEvents': currentUser.favouriteEvents.map((e) => e.toMap()).toList(),
+      });
+
+      debugPrint('Event ${event.eventName} added to favourites in Firestore.');
+
+     
+      // Find the index of the current user in the state list
+      final userIndex = state.indexWhere((account) => account.email == currentUser.email); // Or use UID if stored in AccountData
+
+      if (userIndex != -1) {
+        // Create a *new* list by replacing the old user object
+        state = List.from(state); // Create a mutable copy
+        state[userIndex] = currentUser; // Replace the old object with the updated one
+
+       
+
+         debugPrint('Notifier state updated with new favourites.');
+      } else {
+        debugPrint('Could not find current user in AccountNotifier state list.');
+      }
+      
+
+
+    } catch (e) {
+      debugPrint('Error adding event to favourites: $e');
+      
+      // if the Firestore update fails to keep state consistent
+      currentUser.favouriteEvents.remove(event);
+      
+    }
   }
 
 
@@ -177,7 +218,6 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     required String phoneNum,
     required bool isOrganisation,
     required String userName,
-
   }) async {
     try {
       // Get the current user's ID
@@ -197,15 +237,16 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       // Update the local state for the current user
       if (currentUser != null) {
         currentUser = AccountData(
-          userName: currentUser!.userName, // Keep the existing username
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          phoneNum: int.parse(phoneNum),
-          isOrganisation: isOrganisation,
-          dob: currentUser!.dob,
-          favouriteEvents: currentUser!.favouriteEvents // Keep the existing DOB
-        );
+            userName: currentUser!.userName, // Keep the existing username
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phoneNum: int.parse(phoneNum),
+            isOrganisation: isOrganisation,
+            dob: currentUser!.dob,
+            favouriteEvents:
+                currentUser!.favouriteEvents // Keep the existing DOB
+            );
       }
 
       // Notify listeners by updating the state
@@ -223,7 +264,6 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
   AccountData? currentUser; // To store the currently logged-in user
   Future<AccountData?> authenticate(String email, String password) async {
-
     try {
       // Authenticate the user with Firebase Authentication
       final userCredential = await auth.signInWithEmailAndPassword(
@@ -252,7 +292,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           lastName: data['lastName'] as String,
           phoneNum: data['phoneNum'] as int,
           dob: DateTime.parse(data['dob'] as String),
-          favouriteEvents: data['favouriteEvents'] as List<EventData>? ?? [],
+          favouriteEvents: (data['favouriteEvents'] as List<dynamic>? ?? [])
+              .map((e) => EventData.fromMap(e as Map<String, dynamic>))
+              .toList(),
         );
 
         currentUser = loggedInUser;
@@ -271,7 +313,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
             lastName: '',
             phoneNum: data['phoneNumber'] as int,
             dob: null,
-            favouriteEvents: data['favouriteEvents'] as List<EventData>? ?? [],
+            favouriteEvents: (data['favouriteEvents'] as List<dynamic>? ?? [])
+                .map((e) => EventData.fromMap(e as Map<String, dynamic>))
+                .toList(),
           );
           currentUser = loggedInOrg;
           return loggedInOrg;
@@ -302,7 +346,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
   Future<String?> registerUser(
       String firstName,
       String lastName,
-      String phoneNumber,
+      int phoneNumber,
       String email,
       String password,
       DateTime dob,
@@ -324,7 +368,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         firstName: firstName,
         lastName: lastName,
         userName: userName, // Pass the userName parameter here
-        phoneNum: int.parse(phoneNumber),
+        phoneNum: phoneNumber,
         email: email,
         // password: password,
         dob: dob,
@@ -336,12 +380,13 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       await firestore.collection('users').doc(uid).set({
         'firstName': firstName,
         'lastName': lastName,
-        'phoneNum': int.parse(phoneNumber),
+        'phoneNum': phoneNumber,
         'email': email,
         'dob': dob.toIso8601String(),
         'isOrganisation': isOrganisation,
         'uid': uid,
         'username': userName,
+        'favouriteEvents': [], // Initialize with an empty list
         // Store date as a string in ISO format
       });
 
@@ -374,19 +419,34 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final users = querySnapshot.docs.map((doc) {
         final data = doc.data();
         debugPrint('Fetched user: $data');
+        // Read the list of favourite events from the document
+        final List<dynamic>? favouriteEventMaps = data['favouriteEvents'];
+        // Map the list of maps into a list of EventData objects
+        final List<EventData> favouriteEventsList =
+            (favouriteEventMaps ?? []) // Use empty list if null
+                .map((eventMap) {
+                   // Ensure eventMap is a Map before mapping
+                  if (eventMap is Map<String, dynamic>) {
+                     return EventData.fromMap(eventMap);
+                  } else {
+                     debugPrint('Skipping invalid favourite event data: $eventMap');
+                     return null; // Skip invalid items
+                  }
+                })
+                .whereType<EventData>() // Remove any nulls from invalid data
+                .toList();
         return AccountData(
           userName: data['username'] as String? ??
               '', // Assuming username is stored in Firestore
           email: data['email'] as String? ?? '',
-          // password: data['password'] as String,
-
           isOrganisation: data['isOrganisation'] as bool? ?? false,
           firstName: data['firstName'] as String? ?? '',
           lastName: data['lastName'] as String? ?? '',
-          phoneNum: data['phoneNum'] as int? ?? 0,
+          phoneNum: data['phoneNum'] is int
+              ? data['phoneNum']
+              : int.tryParse(data['phoneNum']?.toString() ?? '') ?? 0,
           dob: data['dob'] != null ? DateTime.tryParse(data['dob']) : null,
-          favouriteEvents: [],
-
+          favouriteEvents: favouriteEventsList,
         );
       }).toList();
 
@@ -400,7 +460,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     required String orgName,
     required String email,
     required String password,
-    required String phoneNumber,
+    required int phoneNumber,
     required String userName,
   }) async {
     try {
@@ -419,7 +479,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         'orgName': orgName,
         'username': userName,
         'email': email,
-        'phoneNumber': int.parse(phoneNumber),
+        'phoneNumber': phoneNumber,
         'isOrganisation': true,
         'createdAt': FieldValue.serverTimestamp(),
         // Add more organisation-specific fields here if needed
@@ -445,16 +505,33 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final querySnapshot = await firestore.collection('organisations').get();
       final organisations = querySnapshot.docs.map((doc) {
         final data = doc.data();
+        final List<dynamic>? favouriteEventMaps = data['favouriteEvents'];
+        final List<EventData> favouriteEventsList =
+            (favouriteEventMaps ?? [])
+                 .map((eventMap) {
+                   if (eventMap is Map<String, dynamic>) {
+                     return EventData.fromMap(eventMap);
+                   } else {
+                     debugPrint('Skipping invalid favourite event data in orgs: $eventMap');
+                     return null;
+                   }
+                })
+                .whereType<EventData>()
+                .toList();
+
         return AccountData(
-          userName: data['username'] as String,
-          email: data['email'] as String,
-          isOrganisation: true,
-          firstName: data['orgName'] as String,
-          lastName: '', // Assuming no last name for organisations
-          phoneNum: data['phoneNumber'] as int,
-          dob: null,
-          favouriteEvents: data['favouriteEvents'] // Assuming no DOB for organisations
-        );
+            userName: data['username'] as String,
+            email: data['email'] as String,
+            isOrganisation: true,
+            firstName: data['orgName'] as String,
+            lastName: '', // Assuming no last name for organisations
+            phoneNum: data['phoneNum'] is int
+                ? data['phoneNum']
+                : int.tryParse(data['phoneNum']?.toString() ?? '') ?? 0,
+            dob: null,
+            favouriteEvents:
+                favouriteEventsList, // Assuming organisations have favourite events
+            );
       }).toList();
 
       return organisations;
