@@ -1,34 +1,29 @@
 import 'package:uni_pulse/Models/events.dart'; 
 
-
+// Model class to represent a user's account data
 class AccountData {
-  final String email;
-  // final String password; // Added password field
-  final bool isOrganisation;
-  final String firstName;
-  final String lastName;
-  final int phoneNum;
-  final String userName;
-  final DateTime? dob; 
-  List<EventData> favouriteEvents;// Added dob field
-  // final String? profileImage; // Added profileImageUrl field
+  final String email;               // User's email address
+  final bool isOrganisation;       // Indicates if the user is an organization
+  final String firstName;          // First name of the user
+  final String lastName;           // Last name of the user
+  final int phoneNum;              // User's phone number
+  final String userName;           // Unique username
+  final DateTime? dob;             // Date of birth (nullable)
+  List<EventData> favouriteEvents; // List of user's favorite events
 
-
+  // Constructor for AccountData
   AccountData({
     required this.email,
-    // required this.password, // Added password to constructor
     required this.isOrganisation,
     required this.firstName,
     required this.lastName,
     required this.phoneNum,
     required this.userName,
-    required this.dob, // Added dob to constructor
+    required this.dob,
     required this.favouriteEvents,
-    // this.profileImage = '', // Added profileImageUrl to constructor
   });
 
-
-  //converting account data so compatible with firebase
+  // Converts AccountData to a Map<String, dynamic> for Firebase storage
   Map<String, dynamic> toMap() {
     return {
       'email': email,
@@ -36,13 +31,13 @@ class AccountData {
       'firstName': firstName,
       'lastName': lastName,
       'phoneNum': phoneNum,
-      'dob': dob?.toIso8601String() ?? '', // Convert DateTime to String or use an empty string if null
-      'favouriteEvents': favouriteEvents.map((event)=> event.toMap()).toList(),
-      'username' : userName,
-      // 'profileImage': profileImage ?? '', // Added profileImageUrl to map
+      'dob': dob?.toIso8601String() ?? '', // Safely convert DateTime to String
+      'favouriteEvents': favouriteEvents.map((event) => event.toMap()).toList(), // Convert list of EventData to list of maps
+      'username': userName,
     };
   }
 
+  // Factory constructor to create AccountData from a Firebase map
   factory AccountData.fromMap(Map<String, dynamic> map) {
     return AccountData(
       email: map['email'],
@@ -50,13 +45,11 @@ class AccountData {
       firstName: map['firstName'],
       lastName: map['lastName'],
       phoneNum: map['phoneNum'],
-      dob: DateTime.parse(map['dob']), // Convert String back to DateTime
+      dob: DateTime.parse(map['dob']), // Convert stored string back to DateTime
       favouriteEvents: (map['favouriteEvents'] as List)
           .map((event) => EventData.fromMap(event))
-          .toList(),
-      userName: map['username'] ?? '', // Added username field
-      // profileImage: map['profileImage'] ?? '', // Added profileImageUrl field
+          .toList(), // Convert list of maps to list of EventData
+      userName: map['username'] ?? '', // Provide default empty string if username is missing
     );
   }
 }
-
