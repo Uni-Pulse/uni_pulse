@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:uni_pulse/Screens/event_details.dart';
 // import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
+import 'package:uni_pulse/Screens/initializing/start_screen.dart';
 
 
 class ProfileScreen extends ConsumerStatefulWidget {
