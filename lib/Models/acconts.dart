@@ -1,4 +1,3 @@
-
 import 'package:uni_pulse/Models/events.dart'; 
 
 
@@ -12,6 +11,7 @@ class AccountData {
   final String userName;
   final DateTime? dob; 
   List<EventData> favouriteEvents;// Added dob field
+  // final String? profileImage; // Added profileImageUrl field
 
 
   AccountData({
@@ -24,6 +24,7 @@ class AccountData {
     required this.userName,
     required this.dob, // Added dob to constructor
     required this.favouriteEvents,
+    // this.profileImage = '', // Added profileImageUrl to constructor
   });
 
 
@@ -37,7 +38,8 @@ class AccountData {
       'phoneNum': phoneNum,
       'dob': dob?.toIso8601String() ?? '', // Convert DateTime to String or use an empty string if null
       'favouriteEvents': favouriteEvents.map((event)=> event.toMap()).toList(),
-      'username' : userName
+      'username' : userName,
+      // 'profileImage': profileImage ?? '', // Added profileImageUrl to map
     };
   }
 
@@ -53,6 +55,7 @@ class AccountData {
           .map((event) => EventData.fromMap(event))
           .toList(),
       userName: map['username'] ?? '', // Added username field
+      // profileImage: map['profileImage'] ?? '', // Added profileImageUrl field
     );
   }
 }

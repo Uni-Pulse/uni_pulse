@@ -9,6 +9,7 @@ import 'package:uni_pulse/Screens/event_details.dart';
 // import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 
+
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -22,21 +23,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  late TextEditingController _usernameController;
+  // bool _isLoading = true;
 
+  String _username = '';
   String _name = '';
   String _lastname = '';
   String _email = '';
   int _phonenum = 0;
-  String _profileImageUrl = '';
   bool _isEditing = false;
-  File? _selectedImageFile;
+
   // DateTime _selectedDay = DateTime.now();
   // DateTime _focusedDay = DateTime.now();
+
   List<String> _starredEvents = [];
 
   @override
   void initState() {
     super.initState();
+    _usernameController = TextEditingController();
     _nameController = TextEditingController();
     _lastNameController = TextEditingController();
     _emailController = TextEditingController();
@@ -46,37 +51,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _fetchUserData() async {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.email)
-          .get();
-      final data = doc.data();
-      if (data != null) {
-        setState(() {
-          _name = data['firstName'];
-          _lastname = data['lastName'];
-          _email = data['email'];
-          _phonenum = int.parse(data['phoneNum']);
-          _profileImageUrl = data['profileImageUrl'] ?? '';
-          _starredEvents = (data['starredEvents'] ?? []);
-          _nameController.text = _name;
-          _lastNameController.text = _lastname;
-          _emailController.text = _email;
-          _phoneController.text = _phonenum.toString();
-        });
+
+    debugPrint('ProfileScreen: currentUser is ${currentUser?.uid ?? "null"}');
+    // setState(() => _isLoading = true);
+    if (currentUser == null) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      final retryUser = FirebaseAuth.instance.currentUser;
+      debugPrint('ProfileScreen: retryUser is ${retryUser?.uid ?? "null"}');
+      if (retryUser == null) {
+        // setState(() => _isLoading = false);
+        return;
       }
     }
-  }
+    if (currentUser == null) {
+      // setState(() => _isLoading = false);
+      return;
+    }
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
+    final data = doc.data();
+    if (data != null) {
       setState(() {
-        _selectedImageFile = File(image.path);
-        _profileImageUrl = '';
+        _username = data['username'] ?? '';
+        _name = data['firstName'] ?? '';
+        _lastname = data['lastName'] ?? '';
+        _email = data['email'] ?? '';
+        _phonenum = data['phoneNum'] is int
+            ? data['phoneNum']
+            : int.tryParse(data['phoneNum']?.toString() ?? '') ?? 0;
+        _starredEvents = List<String>.from(data['starredEvents'] ?? []);
+        _usernameController.text = _username;
+        _nameController.text = _name;
+        _lastNameController.text = _lastname;
+        _emailController.text = _email;
+        _phoneController.text = _phonenum.toString();
+        // _isLoading = false;
       });
+    } else {
+      // setState(() => _isLoading = false);
     }
   }
 
@@ -84,22 +99,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
       try {
-        final userEmail = FirebaseAuth.instance.currentUser!.email;
+
+        final userUid = FirebaseAuth.instance.currentUser!.uid;
+
         await FirebaseFirestore.instance
             .collection('users')
-            .doc(userEmail)
+            .doc(userUid)
             .update({
           'firstName': _name,
           'lastName': _lastname,
           'email': _email,
-          'phoneNum': _phonenum.toString(),
+          'phoneNum': _phonenum,
           'starredEvents': _starredEvents,
         });
-        setState(() => _isEditing = false);
+
+        setState(() {
+          _isEditing = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully!')),
         );
       } catch (e) {
+        debugPrint('Failed to update profile: $e'); // Debug print
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update profile: $e')),
         );
@@ -117,50 +139,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   //   });
   // }
 
-  void _confirmDeleteAccount() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text(
-            'Are you sure you want to delete your account? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _deleteAccount();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _deleteAccount() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      final email = user?.email;
-      if (email != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(email)
-            .delete();
-      }
-      await user?.delete();
+      if (user == null) return;
+
+      // Delete user document from Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .delete();
+
+      // Delete user from Firebase Authentication
+      await user.delete();
+
+      // Optionally, sign out and navigate to login screen
+      await FirebaseAuth.instance.signOut();
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (ctx) => const StartScreen()),
+          (route) => false,
+        ); // or your AuthScreen
       }
     } catch (e) {
+      debugPrint('Error deleting account: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting account: $e')),
+        SnackBar(content: Text('Failed to delete account: $e')),
       );
     }
   }
+
+  // void _confirmDeleteAccount() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Delete Account'),
+  //       content: const Text(
+  //           'Are you sure you want to delete your account? This action cannot be undone.'),
+  //       actions: [
+  //         TextButton(
+  //           child: const Text('Cancel'),
+  //           onPressed: () => Navigator.of(context).pop(),
+  //         ),
+  //         TextButton(
+  //           child: const Text('Delete', style: TextStyle(color: Colors.red)),
+  //           onPressed: () {
+  //             Navigator.of(context).pop();
+  //             _deleteAccount();
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -189,34 +220,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.grey.shade300,
-                      child: _selectedImageFile != null
-                          ? ClipOval(
-                              child: Image.file(_selectedImageFile!,
-                                  fit: BoxFit.cover, width: 120, height: 120))
-                          : _profileImageUrl.isNotEmpty
-                              ? ClipOval(
-                                  child: Image.network(_profileImageUrl,
-                                      fit: BoxFit.cover,
-                                      width: 120,
-                                      height: 120))
-                              : const Icon(Icons.person, size: 60),
-                    ),
+
                     if (_isEditing)
                       Positioned(
                         bottom: 0,
                         right: 0,
                         child: IconButton(
                           icon: const Icon(Icons.edit, color: Colors.white),
-                          onPressed: _pickImage,
+                          onPressed: () {},
                         ),
                       ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
+
+              TextFormField(
+                controller: _usernameController,
+                enabled: false,
+                decoration: const InputDecoration(
+                    labelText: 'Username', border: OutlineInputBorder()),
+                onSaved: (value) => _username = value ?? '',
+              ),
+              const SizedBox(height: 15),
               TextFormField(
                 controller: _nameController,
                 enabled: _isEditing,
@@ -256,22 +282,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF660099),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 18, horizontal: 32),
+                        minimumSize:
+                            const Size(180, 50), // <-- Make button bigger
+                        textStyle: Theme.of(context)
+                            .textTheme
+                            .titleMedium, // Bigger text
                       ),
                       onPressed: _saveProfile,
-                      child: const Text('Save Profile',
-                          style: TextStyle(fontSize: 16, color: Colors.white)),
+
+                      child: Text(
+                        'Save Profile',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ),
                     const SizedBox(height: 15),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      onPressed: _confirmDeleteAccount,
-                      child: const Text('Delete Account',
-                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Delete Account'),
+                            content: const Text(
+                                'Are you sure you want to delete your account? This action cannot be undone.'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text('Cancel')),
+                              TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text('Delete')),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await _deleteAccount();
+                        }
+                      },
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      child: const Text('Delete Account'),
+
                     ),
                     const SizedBox(height: 30),
                   ],
@@ -341,6 +393,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onPressed: () => {} //_toggleStarredEvent(event),
                       ),
                 ),
+
               // const SizedBox(height: 30),
               // const Text('Your Calendar',
               //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -357,6 +410,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               //     });
               //   },
               // ),
+
               const SizedBox(height: 20),
             ],
           ),

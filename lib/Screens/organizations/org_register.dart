@@ -14,15 +14,15 @@ class RegisterOrganisationScreen extends ConsumerStatefulWidget {
       _RegisterOrganisationScreenState();
 }
 
-class _RegisterOrganisationScreenState extends ConsumerState<RegisterOrganisationScreen> {
-
-Uint8List? _image;
-void selectImage() async{
-  Uint8List img = await pickImage(ImageSource.gallery);
-  setState(() {
-    _image = img;
-  });
-}
+class _RegisterOrganisationScreenState
+    extends ConsumerState<RegisterOrganisationScreen> {
+  Uint8List? _image;
+  void selectImage() async {
+    Uint8List img = await pickImage(ImageSource.gallery);
+    setState(() {
+      _image = img;
+    });
+  }
 
   final TextEditingController _orgNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -61,7 +61,7 @@ void selectImage() async{
               orgName: _orgNameController.text.trim(),
               email: _emailController.text.trim(),
               password: _passwordController.text.trim(),
-              phoneNumber: _phoneNumberController.text.trim(),
+              phoneNumber:int.tryParse(_phoneNumberController.text) ?? 0,
               userName: _usernameController.text.trim(),
             );
 
@@ -74,9 +74,9 @@ void selectImage() async{
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Organisation Registration Successful!")),
       );
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => const AuthScreen(),
-      ));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => const AuthScreen()),
+      );
     }
   }
 
@@ -85,7 +85,7 @@ void selectImage() async{
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title:  Text("Register",  style: Theme.of(context).textTheme.titleLarge),
+        title: Text("Register", style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -93,11 +93,11 @@ void selectImage() async{
           key: _formKey,
           child: ListView(
             children: [
-               Center(
-                 child: Stack(
+              Center(
+                child: Stack(
                   children: [
-                    _image != null ?
-                         CircleAvatar(
+                    _image != null
+                        ? CircleAvatar(
                             radius: 65,
                             backgroundImage: MemoryImage(_image!),
                           )
@@ -113,8 +113,8 @@ void selectImage() async{
                       ),
                     )
                   ],
-                               ),
-               ),
+                ),
+              ),
               SizedBox(
                 height: 20,
               ),
@@ -214,7 +214,8 @@ void selectImage() async{
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveOrganisationAccount,
-                child:  Text("Register", style: Theme.of(context).textTheme.bodyMedium),
+                child: Text("Register",
+                    style: Theme.of(context).textTheme.bodyMedium),
               ),
             ],
           ),
