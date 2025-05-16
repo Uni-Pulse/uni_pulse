@@ -2,15 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:uni_pulse/Screens/organizations/org_home.dart';
-import 'package:uni_pulse/Screens/users/user_home_page.dart';
 import 'package:uni_pulse/Screens/initializing/login.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Models/acconts.dart';
 
-// ----------------------------------------------
-// 🔧 Mock Setup
-// ----------------------------------------------
+
 
 class MockAccountsNotifier extends Mock implements AccountNotifier {}
 

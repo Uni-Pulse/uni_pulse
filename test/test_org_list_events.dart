@@ -14,7 +14,7 @@ void main() {
     // Provide a fake current user and events
     final container = ProviderContainer(overrides: [
       eventsProvider.overrideWith((ref) => mockNotifier),
-      // You may need to override accountsProvider if OrgListEvents uses it
+      
     ]);
 
     await tester.pumpWidget(

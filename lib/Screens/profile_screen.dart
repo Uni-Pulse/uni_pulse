@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:uni_pulse/Screens/event_details.dart';
-import 'package:uni_pulse/Models/events.dart';
 import 'package:uni_pulse/Providers/events_provider.dart';
 import 'package:uni_pulse/Screens/initializing/start_screen.dart';
 
@@ -282,6 +280,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     labelText: 'Phone Number', border: OutlineInputBorder()),
                 keyboardType: TextInputType.phone,
                 onSaved: (value) => _phonenum = int.tryParse(value ?? '') ?? 0,
+              ),
+              const SizedBox(height: 20),
+              // Logout button below the text fields
+              Center(
+                child: SizedBox(
+                  width: 180, // Less wide than full width
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Logout'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[700],
+                      foregroundColor: Colors.white,
+                      textStyle: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (mounted) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (ctx) => const StartScreen()),
+                          (route) => false,
+                        );
+                      }
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               if (_isEditing)
