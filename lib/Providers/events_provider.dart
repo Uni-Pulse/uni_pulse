@@ -162,60 +162,55 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
 
   /// Updates user data in Firestore and local state
 
-    Future<void> addFavouriteEvent(EventData event) async {
-    final currentUser = this.currentUser; // Get the current user
-    final firebaseUser = auth.currentUser; // Get the Firebase Auth user
+    Future<void> addFavouriteEvent(String eventName) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
 
-    // Ensure we have both the local AccountData and the Firebase Auth user
-    if (currentUser == null || firebaseUser == null) {
-      debugPrint('Error adding favourite: No user logged in.');
-      return; // Exit if no user is logged in
-    }
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .update({
+    'favouriteEvents': FieldValue.arrayUnion([eventName]),
+  });
 
-    // Add the event to the local currentUser's favourites if it's not already there
-    if (!currentUser.favouriteEvents.contains(event)) {
-        currentUser.favouriteEvents.add(event); // Add to the list
-    } else {
-        debugPrint('Event ${event.eventName} is already in favourites.');
-        return; // Exit if already a favourite
-    }
-
-
-    try {
-      // Update the user's document in Firestore using the UID
-      await firestore.collection('users').doc(firebaseUser.uid).update({
-        // Convert the list of EventData objects to a list of Maps
-        'favouriteEvents': currentUser.favouriteEvents.map((e) => e.toMap()).toList(),
-      });
-
-      debugPrint('Event ${event.eventName} added to favourites in Firestore.');
-
-     
-      // Find the index of the current user in the state list
-      final userIndex = state.indexWhere((account) => account.email == currentUser.email); // Or use UID if stored in AccountData
-
-      if (userIndex != -1) {
-        // Create a *new* list by replacing the old user object
-        state = List.from(state); // Create a mutable copy
-        state[userIndex] = currentUser; // Replace the old object with the updated one
-
-       
-
-         debugPrint('Notifier state updated with new favourites.');
-      } else {
-        debugPrint('Could not find current user in AccountNotifier state list.');
-      }
-      
-
-
-    } catch (e) {
-      debugPrint('Error adding event to favourites: $e');
-      
-      // if the Firestore update fails to keep state consistent
-      currentUser.favouriteEvents.remove(event);
-      
+  // Update local state
+  final userIndex = state.indexWhere((account) => account.email == user.email);
+  if (userIndex != -1) {
+    final updatedAccount = state[userIndex];
+    if (!updatedAccount.favouriteEvents.contains(eventName)) {
+      updatedAccount.favouriteEvents.add(eventName);
+      state = [
+        ...state.sublist(0, userIndex),
+        updatedAccount,
+        ...state.sublist(userIndex + 1),
+      ];
     }
   }
+}
+
+  Future<void> removeFavouriteEvent(String eventName) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .update({
+    'favouriteEvents': FieldValue.arrayRemove([eventName]),
+  });
+
+  // Update local state
+  final userIndex = state.indexWhere((account) => account.email == user.email);
+  if (userIndex != -1) {
+    final updatedAccount = state[userIndex];
+    updatedAccount.favouriteEvents.remove(eventName);
+    state = [
+      ...state.sublist(0, userIndex),
+      updatedAccount,
+      ...state.sublist(userIndex + 1),
+    ];
+  }
+}
 
 
   Future<void> updateUser({
@@ -300,7 +295,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
           phoneNum: data['phoneNum'] as int,
           dob: DateTime.parse(data['dob'] as String),
           favouriteEvents: (data['favouriteEvents'] as List<dynamic>? ?? [])
-              .map((e) => EventData.fromMap(e as Map<String, dynamic>))
+              .map((e) => e.toString())
               .toList(),
         );
 
@@ -321,7 +316,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
             phoneNum: data['phoneNumber'] as int,
             dob: null,
             favouriteEvents: (data['favouriteEvents'] as List<dynamic>? ?? [])
-                .map((e) => EventData.fromMap(e as Map<String, dynamic>))
+                .map((e) => e.toString())
                 .toList(),
           );
           currentUser = loggedInOrg;
@@ -429,31 +424,19 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         debugPrint('Fetched user: $data');
         // Read the list of favourite events from the document
         final List<dynamic>? favouriteEventMaps = data['favouriteEvents'];
-        // Map the list of maps into a list of EventData objects
-        final List<EventData> favouriteEventsList =
-            (favouriteEventMaps ?? []) // Use empty list if null
-                .map((eventMap) {
-                   // Ensure eventMap is a Map before mapping
-                  if (eventMap is Map<String, dynamic>) {
-                     return EventData.fromMap(eventMap);
-                  } else {
-                     debugPrint('Skipping invalid favourite event data: $eventMap');
-                     return null; // Skip invalid items
-                  }
-                })
-                .whereType<EventData>() // Remove any nulls from invalid data
-                .toList();
+        // Map the list of dynamic items into a list of Strings
+        final List<String> favouriteEventsList =
+            (favouriteEventMaps ?? []).map((e) => e.toString()).toList();
         return AccountData(
-          userName: data['username'] as String? ??
-              '', // Assuming username is stored in Firestore
-          email: data['email'] as String? ?? '',
+          userName: data['username'] as String,
+          email: data['email'] as String,
           isOrganisation: data['isOrganisation'] as bool? ?? false,
-          firstName: data['firstName'] as String? ?? '',
-          lastName: data['lastName'] as String? ?? '',
+          firstName: data['firstName'] as String,
+          lastName: data['lastName'] as String,
           phoneNum: data['phoneNum'] is int
               ? data['phoneNum']
               : int.tryParse(data['phoneNum']?.toString() ?? '') ?? 0,
-          dob: data['dob'] != null ? DateTime.tryParse(data['dob']) : null,
+          dob: data['dob'] != null ? DateTime.parse(data['dob'] as String) : null,
           favouriteEvents: favouriteEventsList,
         );
       }).toList();
@@ -470,6 +453,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
     required String password,
     required int phoneNumber,
     required String userName,
+    required List favouriteEvents,
   }) async {
     try {
       // Create a new user in Firebase Authentication
@@ -489,6 +473,7 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
         'email': email,
         'phoneNumber': phoneNumber,
         'isOrganisation': true,
+        'favouriteEvents': favouriteEvents,
         'createdAt': FieldValue.serverTimestamp(),
         // Add more organisation-specific fields here if needed
       });
@@ -514,18 +499,9 @@ class AccountNotifier extends StateNotifier<List<AccountData>> {
       final organisations = querySnapshot.docs.map((doc) {
         final data = doc.data();
         final List<dynamic>? favouriteEventMaps = data['favouriteEvents'];
-        final List<EventData> favouriteEventsList =
-            (favouriteEventMaps ?? [])
-                 .map((eventMap) {
-                   if (eventMap is Map<String, dynamic>) {
-                     return EventData.fromMap(eventMap);
-                   } else {
-                     debugPrint('Skipping invalid favourite event data in orgs: $eventMap');
-                     return null;
-                   }
-                })
-                .whereType<EventData>()
-                .toList();
+        final List<String> favouriteEventsList =
+            (favouriteEventMaps ?? []).map((e) => e.toString()).toList();
+            
 
         return AccountData(
             userName: data['username'] as String,

@@ -10,7 +10,7 @@ class AccountData {
   final int phoneNum;
   final String userName;
   final DateTime? dob; 
-  List<EventData> favouriteEvents;// Added dob field
+  List<String> favouriteEvents;// Added dob field
   // final String? profileImage; // Added profileImageUrl field
 
 
@@ -37,7 +37,7 @@ class AccountData {
       'lastName': lastName,
       'phoneNum': phoneNum,
       'dob': dob?.toIso8601String() ?? '', // Convert DateTime to String or use an empty string if null
-      'favouriteEvents': favouriteEvents.map((event)=> event.toMap()).toList(),
+      'favouriteEvents': favouriteEvents,
       'username' : userName,
       // 'profileImage': profileImage ?? '', // Added profileImageUrl to map
     };
@@ -51,8 +51,8 @@ class AccountData {
       lastName: map['lastName'],
       phoneNum: map['phoneNum'],
       dob: DateTime.parse(map['dob']), // Convert String back to DateTime
-      favouriteEvents: (map['favouriteEvents'] as List)
-          .map((event) => EventData.fromMap(event))
+      favouriteEvents: (map['favouriteEvents'] as List<dynamic>? ?? [])
+          .map((event) => event.toString())
           .toList(),
       userName: map['username'] ?? '', // Added username field
       // profileImage: map['profileImage'] ?? '', // Added profileImageUrl field
