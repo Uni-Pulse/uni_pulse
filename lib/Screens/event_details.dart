@@ -9,13 +9,19 @@ import 'package:uni_pulse/Providers/events_provider.dart';
 
 // EventDetailsScreen displays details for a specific event
 class EventDetailsScreen extends ConsumerWidget {
-  const EventDetailsScreen({super.key, required this.event});
+  EventDetailsScreen({super.key, required this.event});
 
-  final EventData event; // Event data passed to the screen
+  final EventData event;
+  
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Format the event date to a readable string
+
+    final account = ref.watch(accountsProvider.select((accounts) => accounts.isNotEmpty ? accounts.first : null));
+    final favouriteEvents = account?.favouriteEvents ?? [];
+    final isFavourited = favouriteEvents.contains(event.eventName);
+  
     final formattedDate =
         DateFormat('EEEE, MMMM d, yyyy – h:mm a').format(event.date);
 
@@ -95,23 +101,34 @@ class EventDetailsScreen extends ConsumerWidget {
         title: Text('Event Details', style: Theme.of(context).textTheme.titleLarge),
         elevation: 0,
         actions: [
-          // Add to Favourites icon button
-          IconButton(
-            icon: const Icon(Icons.star_border_outlined),
-            onPressed: () async {
-              try {
-                await ref.read(accountsProvider.notifier).addFavouriteEvent(event);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Event added to favourites')),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error adding event to favourites')),
-                );
-              }
-            },
-          ),
-        ],
+            IconButton(
+              
+  icon: Icon(
+    isFavourited ? Icons.star : Icons.star_border_outlined,
+    color: isFavourited ? Colors.amber : null,
+  ),
+  onPressed: () async {
+    try {
+      if (isFavourited) {
+        await ref.read(accountsProvider.notifier).removeFavouriteEvent(event.eventName);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event removed from favourites')),
+        );
+      } else {
+        await ref.read(accountsProvider.notifier).addFavouriteEvent(event.eventName);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event added to favourites')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating favourites: $e')),
+      );
+    }
+  },
+),
+          ],
+
       ),
       body: Column(
         children: [

@@ -9,9 +9,10 @@ class AccountData {
   final int phoneNum;              // User's phone number
   final String userName;           // Unique username
   final DateTime? dob;             // Date of birth (nullable)
-  List<EventData> favouriteEvents; // List of user's favorite events
+  List<String> favouriteEvents; // List of user's favorite events
 
   // Constructor for AccountData
+
   AccountData({
     required this.email,
     required this.isOrganisation,
@@ -31,9 +32,12 @@ class AccountData {
       'firstName': firstName,
       'lastName': lastName,
       'phoneNum': phoneNum,
-      'dob': dob?.toIso8601String() ?? '', // Safely convert DateTime to String
-      'favouriteEvents': favouriteEvents.map((event) => event.toMap()).toList(), // Convert list of EventData to list of maps
-      'username': userName,
+
+      'dob': dob?.toIso8601String() ?? '', // Convert DateTime to String or use an empty string if null
+      'favouriteEvents': favouriteEvents,
+      'username' : userName,
+      // 'profileImage': profileImage ?? '', // Added profileImageUrl to map
+
     };
   }
 
@@ -45,11 +49,13 @@ class AccountData {
       firstName: map['firstName'],
       lastName: map['lastName'],
       phoneNum: map['phoneNum'],
-      dob: DateTime.parse(map['dob']), // Convert stored string back to DateTime
-      favouriteEvents: (map['favouriteEvents'] as List)
-          .map((event) => EventData.fromMap(event))
-          .toList(), // Convert list of maps to list of EventData
-      userName: map['username'] ?? '', // Provide default empty string if username is missing
+      dob: DateTime.parse(map['dob']), // Convert String back to DateTime
+      favouriteEvents: (map['favouriteEvents'] as List<dynamic>? ?? [])
+          .map((event) => event.toString())
+          .toList(),
+      userName: map['username'] ?? '', // Added username field
+      // profileImage: map['profileImage'] ?? '', // Added profileImageUrl field
+
     );
   }
 }
