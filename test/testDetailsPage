@@ -1,0 +1,71 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:uni_pulse/Screens/users/event_details_screen.dart';
+import 'package:uni_pulse/Models/events.dart';
+
+enum EventType {
+  Workshop,
+  Seminar,
+  Social,
+  Sports,
+}
+
+
+class EventData {
+  final String eventName;
+  final String description;
+  final DateTime date;
+  final String ticketPrice;
+  final EventType eventType;
+  final String organisation;
+
+  EventData({
+    required this.eventName,
+    required this.description,
+    required this.date,
+    required this.ticketPrice,
+    required this.eventType,
+    required this.organisation,
+  });
+}
+
+void main() {
+  group('EventDetailsScreen', () {
+    final testEvent = EventData(
+      eventName: 'Test Event',
+      description: 'This is a description of the test event.',
+      date: DateTime(2025, 5, 20, 18, 30),
+      ticketPrice: '10',
+      eventType: EventType.Workshop,
+      organisation: 'Test Organisation',
+    );
+
+    testWidgets('renders event details correctly', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: EventDetailsScreen(event: testEvent),
+        ),
+      );
+
+   
+      expect(find.text('Event Details'), findsOneWidget);
+
+    
+      expect(find.text('Test Event'), findsOneWidget);
+
+   
+      expect(find.text('About This Event'), findsOneWidget);
+      expect(find.text('This is a description of the test event.'), findsOneWidget);
+
+      // Ticket price
+      expect(find.text('£10'), findsOneWidget);
+
+      // Organisation
+      expect(find.text('Test Organisation'), findsOneWidget);
+
+      // Join chat room button
+      expect(find.text('Join Chat Room'), findsOneWidget);
+      expect(find.byIcon(Icons.chat_bubble_outline), findsOneWidget);
+    });
+  });
+}
