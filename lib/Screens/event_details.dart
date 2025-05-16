@@ -24,7 +24,7 @@ class EventDetailsScreen extends ConsumerWidget {
         event.ticketPrice == '0' ? 'Free' : '£${event.ticketPrice}';
 
     // Helper function to retrieve logged-in user or organisation info
-    Future<Map<String, dynamic>> _getUserOrOrgInfo() async {
+    Future<Map<String, dynamic>> getUserOrOrgInfo() async {
       final currentUser = FirebaseAuth.instance.currentUser;
       String username = 'Unknown User';
       bool isOrganisation = false;
@@ -62,8 +62,8 @@ class EventDetailsScreen extends ConsumerWidget {
     }
 
     // Navigates to the chatroom if the user is authenticated
-    void _joinChatRoom(BuildContext context) async {
-      final info = await _getUserOrOrgInfo();
+    void joinChatRoom(BuildContext context) async {
+      final info = await getUserOrOrgInfo();
 
       // If not logged in, show error message
       if (!info['loggedIn']) {
@@ -214,7 +214,7 @@ class EventDetailsScreen extends ConsumerWidget {
                                     const SizedBox(height: 30),
                                     Center(
                                       child: ElevatedButton.icon(
-                                        onPressed: () => _joinChatRoom(context),
+                                        onPressed: () => joinChatRoom(context),
                                         icon: const Icon(Icons.chat_bubble_outline),
                                         label: const Text('Join Chat Room'),
                                         style: ElevatedButton.styleFrom(
@@ -287,7 +287,7 @@ class EventDetailsScreen extends ConsumerWidget {
                               const SizedBox(height: 30),
                               Center(
                                 child: ElevatedButton.icon(
-                                  onPressed: () => _joinChatRoom(context),
+                                  onPressed: () => joinChatRoom(context),
                                   icon: const Icon(Icons.chat_bubble_outline),
                                   label: Text('Join Chat Room',
                                       style: Theme.of(context).textTheme.bodyMedium),
